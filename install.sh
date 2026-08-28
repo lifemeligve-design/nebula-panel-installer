@@ -167,6 +167,10 @@ NODE_ENV=production
 PORT=3000
 DB_PATH=/app/data/bot.db
 
+# Session cookies over plain HTTP (IP access). Set to true once you put
+# the panel behind HTTPS (domain + SSL) so cookies are HTTPS-only.
+SECURE_COOKIES=false
+
 # Host port the panel is published on (installer may change this).
 HOST_PORT=${DEFAULT_PORT}
 EOF
