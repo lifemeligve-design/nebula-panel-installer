@@ -76,10 +76,30 @@ check_os() {
 }
 
 # ---- helpers to generate secrets ---------------------------
-rand_hex() { head -c "${1:-32}" /dev/urandom | od -An -tx1 | tr -d ' \n'; }
+# NOTE: piping /dev/urandom into `head` trips `set -o pipefail` (the
+# reader closes early → SIGPIPE on the writer → non-zero exit → the
+# whole script dies silently). We use openssl when available (clean and
+# reliable), with a pipefail-safe fallback that reads a fixed chunk
+# instead of relying on head closing the pipe.
+rand_hex() {
+  local n="${1:-32}"
+  if command -v openssl >/dev/null 2>&1; then
+    openssl rand -hex "$n"
+  else
+    # Read enough bytes in one go, then hex-encode. No early pipe close.
+    od -An -tx1 -N "$n" /dev/urandom | tr -d ' \n'
+  fi
+}
 rand_pass() {
-  # 16-char human-safe password (no ambiguous chars)
-  tr -dc 'A-HJ-NP-Za-km-z2-9' </dev/urandom | head -c 16
+  # 16-char human-safe password (no ambiguous chars: 0/O/1/l/I).
+  if command -v openssl >/dev/null 2>&1; then
+    # base64 a few bytes, strip ambiguous/padding chars, take 16.
+    openssl rand -base64 24 | tr -dc 'A-HJ-NP-Za-km-z2-9' | cut -c1-16
+  else
+    # Pull a fixed chunk (256 bytes) so the reader never closes early,
+    # filter to safe chars, then take the first 16.
+    od -An -tx1 -N 256 /dev/urandom | tr -dc 'A-HJ-NP-Za-km-z2-9' | cut -c1-16
+  fi
 }
 
 # ---- install docker ----------------------------------------
