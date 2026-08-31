@@ -249,6 +249,83 @@ case "${1:-}" in
   password)
       # Show the current stored panel password (from .env).
       grep -E '^ADMIN_PASSWORD=' "$APP_DIR/.env" | cut -d= -f2- ;;
+  ssl)
+      DOMAIN="${2:-}"
+      if [ -z "$DOMAIN" ]; then
+        echo "Usage: nebula ssl <your-domain>"
+        echo "Example: nebula ssl panel.example.com"
+        exit 1
+      fi
+      if [ "$(id -u)" -ne 0 ]; then echo "Please run as root: sudo nebula ssl $DOMAIN"; exit 1; fi
+
+      echo "▶ Setting up HTTPS for: $DOMAIN"
+
+      # 1) Check the domain points at THIS server (best-effort DNS check).
+      MYIP=$(curl -fsS --max-time 5 https://api.ipify.org 2>/dev/null || true)
+      DIP=$(getent hosts "$DOMAIN" | awk '{print $1}' | head -1 || true)
+      if [ -n "$MYIP" ] && [ -n "$DIP" ] && [ "$MYIP" != "$DIP" ]; then
+        echo ""
+        echo "  ⚠️  DNS doesn't point here yet."
+        echo "     $DOMAIN → ${DIP:-nothing}"
+        echo "     This server → $MYIP"
+        echo ""
+        echo "  Create an A record first:"
+        echo "     Type: A   Name: $DOMAIN   Value: $MYIP"
+        echo "  Then wait a few minutes and run this again."
+        exit 1
+      fi
+
+      # 2) Install nginx + certbot.
+      echo "  Installing nginx + certbot..."
+      export DEBIAN_FRONTEND=noninteractive
+      apt-get update -qq >/dev/null 2>&1
+      apt-get install -y -qq nginx certbot python3-certbot-nginx >/dev/null 2>&1
+
+      # 3) nginx reverse proxy: domain → the panel on 127.0.0.1:3000.
+      cat > "/etc/nginx/sites-available/nebula" <<NGINX
+server {
+    listen 80;
+    server_name $DOMAIN;
+    client_max_body_size 200M;
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+}
+NGINX
+      ln -sf /etc/nginx/sites-available/nebula /etc/nginx/sites-enabled/nebula
+      rm -f /etc/nginx/sites-enabled/default
+      nginx -t >/dev/null 2>&1 && systemctl reload nginx
+
+      # 4) Get the certificate (auto-redirects http→https).
+      echo "  Requesting SSL certificate..."
+      if certbot --nginx -d "$DOMAIN" --non-interactive --agree-tos \
+           --register-unsafely-without-email --redirect >/dev/null 2>&1; then
+        echo "  ✓ Certificate installed"
+      else
+        echo "  ⚠️  Certbot failed. Check that port 80 is open and DNS is correct."
+        echo "     You can retry: certbot --nginx -d $DOMAIN"
+        exit 1
+      fi
+
+      # 5) Turn on secure cookies now that we're behind HTTPS, and restart.
+      if grep -q '^SECURE_COOKIES=' "$APP_DIR/.env"; then
+        sed -i 's/^SECURE_COOKIES=.*/SECURE_COOKIES=true/' "$APP_DIR/.env"
+      else
+        echo "SECURE_COOKIES=true" >> "$APP_DIR/.env"
+      fi
+      docker compose up -d >/dev/null 2>&1
+
+      echo ""
+      echo "  🎉 Done! Your panel is now at:  https://$DOMAIN"
+      echo "     (http automatically redirects to https)"
+      ;;
   uninstall)
       read -rp "Remove Nebula and ALL data? Type 'yes': " c
       [ "$c" = "yes" ] || { echo "Cancelled."; exit 0; }
@@ -256,15 +333,16 @@ case "${1:-}" in
       echo "Nebula removed." ;;
   *)
       echo "Nebula AI Platform — commands:"
-      echo "  nebula start      Start the platform"
-      echo "  nebula stop       Stop it"
-      echo "  nebula restart    Restart it"
-      echo "  nebula status     Show container status"
-      echo "  nebula logs       Follow live logs"
-      echo "  nebula update     Update to the newest version"
-      echo "  nebula version    Show installed version"
-      echo "  nebula password   Show the panel password"
-      echo "  nebula uninstall  Remove everything" ;;
+      echo "  nebula start        Start the platform"
+      echo "  nebula stop         Stop it"
+      echo "  nebula restart      Restart it"
+      echo "  nebula status       Show container status"
+      echo "  nebula logs         Follow live logs"
+      echo "  nebula update       Update to the newest version"
+      echo "  nebula version      Show installed version"
+      echo "  nebula password     Show the panel password"
+      echo "  nebula ssl <domain> Set up free HTTPS for a domain"
+      echo "  nebula uninstall    Remove everything" ;;
 esac
 EOF
   chmod +x "$BIN_PATH"
@@ -307,7 +385,9 @@ summary() {
   printf "    ${PURP}nebula password${R}  show this password again\n\n"
 
   if [ -z "${PANEL_DOMAIN:-}" ]; then
-    printf "  ${GREY}Tip: re-run with a domain to enable HTTPS.${R}\n\n"
+    printf "  ${B}Enable HTTPS${R} (optional)\n"
+    printf "    Point a domain at this server, then run:\n"
+    printf "    ${PURP}nebula ssl your-domain.com${R}\n\n"
   fi
 }
 
