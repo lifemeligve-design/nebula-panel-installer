@@ -1,12 +1,11 @@
 #!/usr/bin/env bash
 # ============================================================
-# Nebula AI Platform — Graphical Installer (whiptail TUI)
+# Nebula AI Platform — Premium Installer (custom animated TUI)
 # ============================================================
 #   bash <(curl -Ls https://nebulapanel.cloud/install)
 #
-# A real windowed UI (like Hiddify): arrow keys to move, Enter to select.
-# 5 languages (English, Türkçe, 中文, Deutsch, Svenska). Everything is
-# configurable later inside the panel.
+# A hand-built terminal UI: animated NEBULA logo with a purple→blue
+# gradient, arrow-key navigation, and a polished menu. 5 languages.
 # ============================================================
 
 set -euo pipefail
@@ -21,35 +20,42 @@ BIN_PATH="/usr/local/bin/nebula"
 DEFAULT_PORT=3000
 LANG="en"
 
-# whiptail color theme (Nebula purple/cyan vibe)
-export NEWT_COLORS='
-root=,black
-window=,black
-border=white,black
-title=brightcyan,black
-button=black,brightcyan
-actbutton=black,white
-listbox=white,black
-actlistbox=black,brightcyan
-textbox=white,black
-actsellistbox=black,brightcyan
-checkbox=white,black
-actcheckbox=black,brightcyan
-'
+# ---- terminal control --------------------------------------
+ESC=$'\033'
+hide_cursor(){ printf '%s[?25l' "$ESC"; }
+show_cursor(){ printf '%s[?25h' "$ESC"; }
+clear_scr(){ printf '%s[2J%s[H' "$ESC" "$ESC"; }
+move_to(){ printf '%s[%d;%dH' "$ESC" "$1" "$2"; }
+reset_all(){ printf '%s[0m' "$ESC"; }
+cleanup(){ show_cursor; reset_all; printf '\n'; }
+trap cleanup EXIT INT TERM
 
-# ---- must be root ------------------------------------------
-if [ "$(id -u)" -ne 0 ]; then
-  echo "Please run as root:  sudo bash <(curl -Ls https://nebulapanel.cloud/install)"
-  exit 1
-fi
+# truecolor helpers (24-bit) — most modern terminals support these
+fg(){ printf '%s[38;2;%d;%d;%dm' "$ESC" "$1" "$2" "$3"; }
+bg(){ printf '%s[48;2;%d;%d;%dm' "$ESC" "$1" "$2" "$3"; }
+bold(){ printf '%s[1m' "$ESC"; }
+dim(){ printf '%s[2m' "$ESC"; }
 
-# ---- ensure whiptail is present -----------------------------
-if ! command -v whiptail >/dev/null 2>&1; then
-  echo "Preparing the graphical interface..."
-  export DEBIAN_FRONTEND=noninteractive
-  apt-get update -qq >/dev/null 2>&1
-  apt-get install -y -qq whiptail >/dev/null 2>&1
-fi
+# Nebula gradient stops (purple → violet → blue)
+# We interpolate across these for the logo.
+grad_color() {  # $1 = 0..100 position → sets fg
+  local p=$1
+  local r g b
+  if [ "$p" -lt 50 ]; then
+    # purple (139,92,246) → blue-violet (99,102,241)
+    local t=$(( p * 2 ))
+    r=$(( 139 + (99-139)*t/100 ))
+    g=$(( 92  + (102-92)*t/100 ))
+    b=$(( 246 + (241-246)*t/100 ))
+  else
+    # blue-violet (99,102,241) → cyan-blue (56,189,248)
+    local t=$(( (p-50) * 2 ))
+    r=$(( 99  + (56-99)*t/100 ))
+    g=$(( 102 + (189-102)*t/100 ))
+    b=$(( 241 + (248-241)*t/100 ))
+  fi
+  fg "$r" "$g" "$b"
+}
 # ---- translations (5 LTR languages, whiptail-safe) ---------
 declare -A T_en T_tr T_zh T_de T_sv
 
@@ -354,6 +360,155 @@ t() {
   [ -z "$val" ] && { var="T_en[$key]"; val="${!var:-$key}"; }
   printf '%s' "$val"
 }
+# ---- the NEBULA wordmark (big ASCII) -----------------------
+# Rendered line-by-line so we can paint a horizontal gradient across it.
+logo_lines() {
+  cat <<'ART'
+███╗   ██╗███████╗██████╗ ██╗   ██╗██╗      █████╗
+████╗  ██║██╔════╝██╔══██╗██║   ██║██║     ██╔══██╗
+██╔██╗ ██║█████╗  ██████╔╝██║   ██║██║     ███████║
+██║╚██╗██║██╔══╝  ██╔══██╗██║   ██║██║     ██╔══██║
+██║ ╚████║███████╗██████╔╝╚██████╔╝███████╗██║  ██║
+╚═╝  ╚═══╝╚══════╝╚═════╝  ╚═════╝ ╚══════╝╚═╝  ╚═╝
+ART
+}
+
+# paint one logo line with a left→right gradient
+paint_line() {  # $1 = line text, $2 = top col
+  local line="$1" col="$2" i ch len
+  len=${#line}
+  move_to "$3" "$col"
+  for (( i=0; i<len; i++ )); do
+    ch="${line:$i:1}"
+    local pos=$(( i * 100 / (len>0?len:1) ))
+    grad_color "$pos"
+    printf '%s' "$ch"
+  done
+  reset_all
+}
+
+# ---- animated intro ----------------------------------------
+# Reveal the logo line by line with a subtle delay, then the tagline
+# fades in. Kept fast so it feels slick, not slow.
+term_width(){ tput cols 2>/dev/null || echo 80; }
+
+draw_header() {  # $1 = animate? (1/0)
+  local animate="${1:-0}"
+  clear_scr
+  local W; W=$(term_width)
+  local logo_w=50
+  local col=$(( (W - logo_w) / 2 )); [ "$col" -lt 1 ] && col=1
+
+  # background top accent bar
+  local row=2
+  # logo lines
+  local -a L
+  mapfile -t L < <(logo_lines)
+  local n=${#L[@]}
+  for (( r=0; r<n; r++ )); do
+    if [ "$animate" = "1" ]; then sleep 0.04; fi
+    paint_line "${L[$r]}" "$col" "$(( row + r ))"
+  done
+
+  # tagline: NEBULA AI PLATFORM
+  local tag="N E B U L A   A I   P L A T F O R M"
+  local tcol=$(( (W - ${#tag}) / 2 )); [ "$tcol" -lt 1 ] && tcol=1
+  local trow=$(( row + n + 1 ))
+  if [ "$animate" = "1" ]; then sleep 0.12; fi
+  move_to "$trow" "$tcol"
+  bold; fg 148 163 184; printf '%s' "$tag"; reset_all
+
+  # thin gradient divider
+  local drow=$(( trow + 2 ))
+  local dw=$(( logo_w )); local dcol="$col"
+  move_to "$drow" "$dcol"
+  local i
+  for (( i=0; i<dw; i++ )); do
+    grad_color $(( i * 100 / dw )); printf '─'
+  done
+  reset_all
+  MENU_TOP=$(( drow + 2 ))   # where the menu starts, below the header
+}
+
+# ---- arrow-key menu ----------------------------------------
+# Draws a vertical list under the header; ↑/↓ move, Enter selects.
+# Returns the chosen index (0-based) in $MENU_RESULT.
+MENU_RESULT=-1
+
+read_key() {
+  # read a single keypress; translate arrows/enter to tokens
+  local k rest
+  IFS= read -rsn1 k </dev/tty || true
+  if [ "$k" = "$ESC" ]; then
+    read -rsn2 -t 0.001 rest </dev/tty || true
+    case "$rest" in
+      '[A') echo up ;; '[B') echo down ;;
+      '[C') echo right ;; '[D') echo left ;;
+      *) echo esc ;;
+    esac
+  elif [ -z "$k" ]; then echo enter
+  else
+    case "$k" in
+      q|Q) echo quit ;;
+      *) echo other ;;
+    esac
+  fi
+}
+
+# draw the menu items; highlight the selected one as a "button"
+draw_menu() {  # uses global MENU_ITEMS[], MENU_SEL, MENU_TOP, MENU_TITLE
+  local W; W=$(term_width)
+  local n=${#MENU_ITEMS[@]}
+  local boxw=46
+  local col=$(( (W - boxw) / 2 )); [ "$col" -lt 1 ] && col=1
+
+  # title line above menu
+  move_to "$MENU_TOP" "$col"
+  bold; fg 203 213 225; printf '%s' "$MENU_TITLE"; reset_all
+
+  local start=$(( MENU_TOP + 2 ))
+  local i
+  for (( i=0; i<n; i++ )); do
+    local row=$(( start + i ))
+    move_to "$row" "$col"
+    if [ "$i" -eq "$MENU_SEL" ]; then
+      # selected → filled gradient-ish button
+      bg 99 102 241; fg 255 255 255; bold
+      printf '  %-42s' "${MENU_ITEMS[$i]}"
+      reset_all
+    else
+      fg 148 163 184
+      printf '  %-42s' "${MENU_ITEMS[$i]}"
+      reset_all
+    fi
+  done
+
+  # hint line
+  local hrow=$(( start + n + 1 ))
+  move_to "$hrow" "$col"
+  dim; fg 100 116 139
+  printf '%s' "↑/↓  •  Enter  •  q"
+  reset_all
+}
+
+# run a menu: args are the item labels. sets MENU_RESULT.
+run_menu() {  # $MENU_TITLE must be set; "$@" = items
+  MENU_ITEMS=("$@")
+  MENU_SEL=0
+  local n=${#MENU_ITEMS[@]}
+  hide_cursor
+  draw_header 0
+  draw_menu
+  while true; do
+    case "$(read_key)" in
+      up)    MENU_SEL=$(( (MENU_SEL - 1 + n) % n )); draw_menu ;;
+      down)  MENU_SEL=$(( (MENU_SEL + 1) % n )); draw_menu ;;
+      enter) MENU_RESULT=$MENU_SEL; return 0 ;;
+      quit|esc) MENU_RESULT=-1; return 1 ;;
+    esac
+  done
+}
+
 # ---- secrets & helpers -------------------------------------
 rand_hex() {
   local n="${1:-32}"
@@ -598,160 +753,169 @@ EOF
   ok "'nebula' command ready"
 }
 
-# ============================================================
-# whiptail UI
-# ============================================================
-TITLE="Nebula AI Platform"
-
-# ---- language picker (graphical) ---------------------------
-pick_language() {
-  local sel
-  sel=$(whiptail --title "$TITLE" \
-    --menu "\n  Choose your language:\n" 16 56 5 \
-    "1" "  English" \
-    "2" "  Türkçe" \
-    "3" "  中文 (Chinese)" \
-    "4" "  Deutsch" \
-    "5" "  Svenska" \
-    3>&1 1>&2 2>&3) || { clear; exit 0; }
-  case "$sel" in
-    1) LANG="en" ;; 2) LANG="tr" ;; 3) LANG="zh" ;;
-    4) LANG="de" ;; 5) LANG="sv" ;; *) LANG="en" ;;
-  esac
+# ---- a simple centered "screen" for messages ---------------
+info_screen() {  # $1 = title line, $2.. = body lines
+  draw_header 0
+  local W; W=$(term_width)
+  local row=$MENU_TOP
+  local title="$1"; shift
+  local col=$(( (W - 46) / 2 )); [ "$col" -lt 1 ] && col=1
+  move_to "$row" "$col"; bold; fg 203 213 225; printf '%s' "$title"; reset_all
+  local i=2
+  for line in "$@"; do
+    move_to "$(( row + i ))" "$col"; fg 148 163 184; printf '%s' "$line"; reset_all
+    i=$(( i + 1 ))
+  done
+  move_to "$(( row + i + 1 ))" "$col"; dim; fg 100 116 139
+  printf '%s' "$(t press_enter)"; reset_all
+  read -rsn1 _ </dev/tty || true
 }
 
-# ---- install with a progress gauge -------------------------
+# ---- install (with animated status lines) ------------------
 do_install() {
-  {
-    echo "10"; echo "# $(t installing_docker)"
-    install_docker_q
-    echo "45"; echo "# $(t preparing_config)"
-    write_env
-    write_compose
-    echo "60"; echo "# $(t pulling_image)"
-    docker pull "$IMAGE" >/dev/null 2>&1
-    echo "85"; echo "# $(t starting)"
-    docker compose --project-directory "$APP_DIR" -f "$COMPOSE_FILE" up -d >/dev/null 2>&1
-    install_cli
-    echo "100"; echo "# $(t container_up)"
-    sleep 1
-  } | whiptail --title "$TITLE" --gauge "\n  $(t starting)..." 8 60 0
+  draw_header 0
+  local W; W=$(term_width)
+  local col=$(( (W - 46) / 2 )); [ "$col" -lt 1 ] && col=1
+  local row=$MENU_TOP
+  _line(){ move_to "$(( row + $1 ))" "$col"; fg "$2" "$3" "$4"; printf '%s' "$5"; reset_all; }
 
-  # success screen
+  _line 0 99 102 241 "⏳ $(t installing_docker)"
+  install_docker_q
+  _line 0 56 189 140 "✓  $(t docker_present)     "
+  _line 1 99 102 241 "⏳ $(t preparing_config)"
+  write_env; write_compose
+  _line 1 56 189 140 "✓  $(t config_generated)     "
+  _line 2 99 102 241 "⏳ $(t pulling_image)"
+  docker pull "$IMAGE" >/dev/null 2>&1
+  _line 2 56 189 140 "✓  $(t image_pulled)     "
+  _line 3 99 102 241 "⏳ $(t starting)"
+  docker compose --project-directory "$APP_DIR" -f "$COMPOSE_FILE" up -d >/dev/null 2>&1
+  install_cli
+  _line 3 56 189 140 "✓  $(t container_up)     "
+  sleep 1
+
   local ip; ip="$(public_ip)"
   local url="http://${ip}:${HOST_PORT:-$DEFAULT_PORT}"
-  whiptail --title "  🎉  $(t is_live)  " --msgbox "\n\
-  $(t panel_url):
-    $url
-
-  $(t username):  ${ADMIN_USERNAME}
-  $(t password):  ${ADMIN_PASSWORD}
-
-  $(t change_later)
-
-  $(t next_steps):
-   1. $(t step1)
-   2. $(t step2)
-   3. $(t step3)
-" 20 66
+  info_screen "🎉  $(t is_live)" \
+    "" \
+    "$(t panel_url):  $url" \
+    "$(t username):  ${ADMIN_USERNAME}" \
+    "$(t password):  ${ADMIN_PASSWORD}" \
+    "" \
+    "$(t change_later)" \
+    "" \
+    "1. $(t step1)" \
+    "2. $(t step2)" \
+    "3. $(t step3)"
 }
 
 do_update() {
-  if [ ! -d "$APP_DIR" ]; then whiptail --title "$TITLE" --msgbox "\n  $(t not_installed)" 9 60; return; fi
-  {
-    echo "30"; echo "# $(t updating)"
-    docker pull "$IMAGE" >/dev/null 2>&1
-    echo "80"; echo "# $(t starting)"
-    docker compose --project-directory "$APP_DIR" -f "$COMPOSE_FILE" up -d >/dev/null 2>&1
-    echo "100"; sleep 1
-  } | whiptail --title "$TITLE" --gauge "\n  $(t updating)" 8 60 0
-  whiptail --title "$TITLE" --msgbox "\n  ✓ $(t updated)" 9 60
+  if [ ! -d "$APP_DIR" ]; then info_screen "$(t menu_update)" "$(t not_installed)"; return; fi
+  draw_header 0
+  local W; W=$(term_width); local col=$(( (W-46)/2 )); [ "$col" -lt 1 ] && col=1
+  move_to "$MENU_TOP" "$col"; fg 99 102 241; printf '⏳ %s' "$(t updating)"; reset_all
+  docker pull "$IMAGE" >/dev/null 2>&1
+  docker compose --project-directory "$APP_DIR" -f "$COMPOSE_FILE" up -d >/dev/null 2>&1
+  info_screen "$(t menu_update)" "✓  $(t updated)"
 }
 
 do_ssl() {
-  if [ ! -d "$APP_DIR" ]; then whiptail --title "$TITLE" --msgbox "\n  $(t not_installed)" 9 60; return; fi
-  local m
-  m=$(whiptail --title "$TITLE" --menu "\n  $(t ssl_choose):\n" 14 62 2 \
-    "1" "  🌐  $(t ssl_domain)" \
-    "2" "  ⚡  $(t ssl_auto)" \
-    3>&1 1>&2 2>&3) || return
+  if [ ! -d "$APP_DIR" ]; then info_screen "$(t menu_ssl)" "$(t not_installed)"; return; fi
+  MENU_TITLE="$(t ssl_choose)"
+  run_menu "🌐  $(t ssl_domain)" "⚡  $(t ssl_auto)" || return
   local domain="auto"
-  if [ "$m" = "1" ]; then
-    domain=$(whiptail --title "$TITLE" --inputbox "\n  $(t ssl_enter_domain):" 10 62 3>&1 1>&2 2>&3) || return
+  if [ "$MENU_RESULT" = "0" ]; then
+    show_cursor
+    draw_header 0
+    local W; W=$(term_width); local col=$(( (W-46)/2 )); [ "$col" -lt 1 ] && col=1
+    move_to "$MENU_TOP" "$col"; fg 203 213 225; printf '%s: ' "$(t ssl_enter_domain)"; reset_all
+    read -r domain </dev/tty
+    hide_cursor
     [ -z "$domain" ] && return
   fi
-  clear
-  echo "▶ $(t menu_ssl): $domain"
+  clear_scr; show_cursor
   nebula ssl "$domain" || true
-  echo ""
-  read -r -p "  $(t press_enter) " _ </dev/tty
+  echo ""; read -r -p "  $(t press_enter) " _ </dev/tty
+  hide_cursor
 }
 
 do_status() {
-  local out
-  if [ -d "$APP_DIR" ]; then
-    out=$(docker compose --project-directory "$APP_DIR" ps 2>/dev/null || echo "-")
-  else out="$(t not_installed)"; fi
-  whiptail --title "$TITLE — $(t menu_status)" --msgbox "\n$out" 16 72
+  local out="-"
+  [ -d "$APP_DIR" ] && out=$(docker compose --project-directory "$APP_DIR" ps 2>/dev/null | tail -n +1 | head -4 || echo "-")
+  clear_scr; show_cursor; draw_header 0
+  echo ""; echo "$out"; echo ""
+  read -r -p "  $(t press_enter) " _ </dev/tty; hide_cursor
 }
 
 do_logs() {
-  if [ ! -d "$APP_DIR" ]; then whiptail --title "$TITLE" --msgbox "\n  $(t not_installed)" 9 60; return; fi
-  clear
-  echo "▶ $(t menu_logs) (Ctrl+C to exit)"
-  docker compose --project-directory "$APP_DIR" logs --tail=120 2>/dev/null || true
-  echo ""
-  read -r -p "  $(t press_enter) " _ </dev/tty
+  if [ ! -d "$APP_DIR" ]; then info_screen "$(t menu_logs)" "$(t not_installed)"; return; fi
+  clear_scr; show_cursor
+  docker compose --project-directory "$APP_DIR" logs --tail=100 2>/dev/null || true
+  echo ""; read -r -p "  $(t press_enter) " _ </dev/tty; hide_cursor
 }
 
 do_password() {
   local p="—"
   [ -f "$ENV_FILE" ] && p=$(grep -E '^ADMIN_PASSWORD=' "$ENV_FILE" | cut -d= -f2-)
-  whiptail --title "$TITLE" --msgbox "\n  $(t password):\n\n     $p" 11 56
+  info_screen "🔑  $(t menu_password)" "" "$(t password):  $p"
 }
 
 do_restart() {
-  if [ ! -d "$APP_DIR" ]; then whiptail --title "$TITLE" --msgbox "\n  $(t not_installed)" 9 60; return; fi
+  if [ ! -d "$APP_DIR" ]; then info_screen "$(t menu_restart)" "$(t not_installed)"; return; fi
   docker compose --project-directory "$APP_DIR" restart >/dev/null 2>&1
-  whiptail --title "$TITLE" --msgbox "\n  ✓ $(t restarted)" 9 56
+  info_screen "$(t menu_restart)" "✓  $(t restarted)"
 }
 
 do_uninstall() {
-  if [ ! -d "$APP_DIR" ]; then whiptail --title "$TITLE" --msgbox "\n  $(t not_installed)" 9 60; return; fi
-  if whiptail --title "$TITLE" --yesno "\n  $(t confirm_uninstall)" 10 62; then
+  if [ ! -d "$APP_DIR" ]; then info_screen "$(t menu_uninstall)" "$(t not_installed)"; return; fi
+  MENU_TITLE="$(t confirm_uninstall)"
+  run_menu "$(t menu_exit)" "$(t menu_uninstall)" || return
+  if [ "$MENU_RESULT" = "1" ]; then
     docker compose --project-directory "$APP_DIR" down -v >/dev/null 2>&1 || true
     docker rmi -f "$IMAGE" >/dev/null 2>&1 || true
     rm -rf "$APP_DIR"; rm -f "$BIN_PATH"
-    whiptail --title "$TITLE" --msgbox "\n  ✓ $(t removed)" 9 56
+    info_screen "$(t menu_uninstall)" "✓  $(t removed)"
   fi
+}
+
+# ---- language picker (arrow-key) ---------------------------
+pick_language() {
+  MENU_TITLE="Choose your language"
+  run_menu "English" "Türkçe" "中文 (Chinese)" "Deutsch" "Svenska" || { clear_scr; exit 0; }
+  case "$MENU_RESULT" in
+    0) LANG="en" ;; 1) LANG="tr" ;; 2) LANG="zh" ;;
+    3) LANG="de" ;; 4) LANG="sv" ;; *) LANG="en" ;;
+  esac
 }
 
 # ---- main menu loop ----------------------------------------
 main_menu() {
   while true; do
-    local choice
-    choice=$(whiptail --title "$TITLE" \
-      --cancel-button "$(t menu_exit)" \
-      --menu "\n  $(t menu_title):\n" 20 62 9 \
-      "1" "  🚀  $(t menu_install)" \
-      "2" "  ⬆️   $(t menu_update)" \
-      "3" "  🔒  $(t menu_ssl)" \
-      "4" "  📊  $(t menu_status)" \
-      "5" "  📜  $(t menu_logs)" \
-      "6" "  🔑  $(t menu_password)" \
-      "7" "  🔄  $(t menu_restart)" \
-      "8" "  🗑   $(t menu_uninstall)" \
-      3>&1 1>&2 2>&3) || { clear; exit 0; }
-    case "$choice" in
-      1) do_install ;;  2) do_update ;;   3) do_ssl ;;
-      4) do_status ;;   5) do_logs ;;     6) do_password ;;
-      7) do_restart ;;  8) do_uninstall ;;
+    MENU_TITLE="$(t menu_title)"
+    run_menu \
+      "🚀  $(t menu_install)" \
+      "⬆️   $(t menu_update)" \
+      "🔒  $(t menu_ssl)" \
+      "📊  $(t menu_status)" \
+      "📜  $(t menu_logs)" \
+      "🔑  $(t menu_password)" \
+      "🔄  $(t menu_restart)" \
+      "🗑   $(t menu_uninstall)" \
+      "❌  $(t menu_exit)" \
+      || { clear_scr; exit 0; }
+    case "$MENU_RESULT" in
+      0) do_install ;;  1) do_update ;;  2) do_ssl ;;
+      3) do_status ;;   4) do_logs ;;    5) do_password ;;
+      6) do_restart ;;  7) do_uninstall ;;
+      8) clear_scr; exit 0 ;;
     esac
   done
 }
 
 # ============================================================
 main() {
+  hide_cursor
+  draw_header 1     # animated intro on first draw
   pick_language
   main_menu
 }
