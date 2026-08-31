@@ -532,58 +532,238 @@ draw_progress() {  # $1 row, $2 col, $3 percent, $4 label
   [ -n "$label" ] && { printf '  '; fg 148 163 184; printf '%s' "$label"; reset_all; }
 }
 
-# ---- arrow-key menu (framed, professional) -----------------
+# ============================================================
+# Advanced visual effects
+# ============================================================
+
+# ---- typewriter -------------------------------------------
+# Print text char-by-char. Fast enough to feel slick, not slow.
+typewriter() {  # $1 row, $2 col, $3 text, $4 r, $5 g, $6 b, $7 delay
+  local row=$1 col=$2 text=$3 r=$4 g=$5 b=$6 delay="${7:-0.012}"
+  local i ch
+  move_to "$row" "$col"; fg "$r" "$g" "$b"
+  for (( i=0; i<${#text}; i++ )); do
+    printf '%s' "${text:$i:1}"
+    sleep "$delay"
+  done
+  reset_all
+}
+
+# ---- animated nebula cloud (splash background) -------------
+# A soft, drifting cloud of colored glyphs — evokes a real nebula.
+NEB_GLYPHS=('░' '▒' '·' '∴' '✦' '⋆' '˖' '⊹')
+draw_nebula_frame() {  # $1 = phase (0..N) for drift
+  local phase=$1 W H
+  W=$(term_w); H=$(term_h)
+  local cx=$(( W/2 )) cy=$(( H/2 ))
+  local y x
+  for (( y=1; y<=H; y++ )); do
+    for (( x=1; x<=W; x+=2 )); do
+      # distance-based density with a drifting sine wobble
+      local dx=$(( x - cx )) dy=$(( (y - cy) * 2 ))
+      local d2=$(( dx*dx + dy*dy ))
+      # pseudo-noise via cheap hash of x,y,phase
+      local h=$(( (x*7 + y*13 + phase*5) % 23 ))
+      if [ "$d2" -lt $(( (W*W/6) + h*40 )) ] && [ "$h" -gt 15 ]; then
+        move_to "$y" "$x"
+        # color depends on distance → purple core, blue edges
+        local pos=$(( d2 * 100 / (W*W/4 + 1) )); [ "$pos" -gt 100 ] && pos=100
+        grad_color "$pos"
+        printf '%s' "${NEB_GLYPHS[$(( (h) % ${#NEB_GLYPHS[@]} ))]}"
+      fi
+    done
+  done
+  reset_all
+}
+
+# ---- shooting star -----------------------------------------
+# A streak that flies diagonally across the screen once.
+shooting_star() {
+  local W H; W=$(term_w); H=$(term_h)
+  local sr=$(( RANDOM % (H/2) + 1 ))
+  local sc=$(( RANDOM % (W/2) + 1 ))
+  local len=6 i j
+  local tail=('.' '·' '•' '✦' '★' '☄')
+  for (( i=0; i<W-sc && i<H-sr; i+=2 )); do
+    local r=$(( sr + i/2 )) c=$(( sc + i ))
+    # draw head + fading tail
+    for (( j=0; j<len; j++ )); do
+      local tr=$(( r - j/2 )) tc=$(( c - j ))
+      [ "$tr" -lt 1 ] && continue; [ "$tc" -lt 1 ] && continue
+      move_to "$tr" "$tc"
+      local bright=$(( 255 - j*35 ))
+      fg "$bright" "$bright" 255
+      printf '%s' "${tail[$(( len-1-j < ${#tail[@]} ? len-1-j : 0 ))]}"
+    done
+    reset_all
+    sleep 0.02
+    # erase the tail-end
+    local er=$(( r - (len-1)/2 )) ec=$(( c - (len-1) ))
+    [ "$er" -ge 1 ] && [ "$ec" -ge 1 ] && { move_to "$er" "$ec"; printf ' '; }
+  done
+}
+
+# ---- planet spinner ----------------------------------------
+# A little orbiting spinner for indeterminate waits.
+PLANET=('🌑' '🌒' '🌓' '🌔' '🌕' '🌖' '🌗' '🌘')
+spin_planet() {  # $1 row $2 col $3 label ; runs cmd in $4..
+  local row=$1 col=$2 label=$3; shift 3
+  ("$@") >/dev/null 2>&1 &
+  local pid=$! i=0
+  while kill -0 "$pid" 2>/dev/null; do
+    move_to "$row" "$col"
+    printf '%s' "${PLANET[$(( i % 8 ))]}"
+    fg 148 163 184; printf '  %s' "$label"; reset_all
+    i=$(( i+1 )); sleep 0.12
+  done
+  wait "$pid" 2>/dev/null || true
+  move_to "$row" "$col"; fg 56 189 140; printf '✓ '; fg 148 163 184; printf ' %s      ' "$label"; reset_all
+}
+
+# ---- static header (light, no lag) -------------------------
+MENU_TOP=0
+draw_header() {
+  clear_scr
+  local W; W=$(term_w)
+  if [ "$W" -lt 54 ]; then W=54; fi
+  # light starfield only if terminal is big enough
+  [ "$(term_h)" -ge 20 ] && draw_stars_fast
+  local col=$(( (W - LOGO_W) / 2 )); [ "$col" -lt 1 ] && col=1
+  paint_logo 2 "$col" 0
+  local tag="N E B U L A   A I   P L A T F O R M"
+  local tcol=$(( (W - ${#tag}) / 2 )); [ "$tcol" -lt 1 ] && tcol=1
+  move_to "$(( 2 + LOGO_H ))" "$tcol"; bold; fg 148 163 184; printf '%s' "$tag"; reset_all
+  draw_stats "$(( 2 + LOGO_H + 1 ))"
+  local drow=$(( 2 + LOGO_H + 3 ))
+  move_to "$drow" "$col"
+  local i
+  for (( i=0; i<LOGO_W; i++ )); do grad_color $(( i*100/LOGO_W )); printf '─'; done
+  reset_all
+  MENU_TOP=$(( drow + 2 ))
+}
+
+draw_stats() {
+  local row=$1 W; W=$(term_w)
+  local mem disk cores
+  mem=$(free -m 2>/dev/null | awk '/Mem:/{printf "%d/%dMB", $3, $2}' || echo "?")
+  disk=$(df -h / 2>/dev/null | awk 'NR==2{print $4}' || echo "?")
+  cores=$(nproc 2>/dev/null || echo "?")
+  local info="◈ RAM ${mem}    ◈ ${cores} CPU    ◈ ${disk} free"
+  local col=$(( (W - ${#info}) / 2 )); [ "$col" -lt 1 ] && col=1
+  move_to "$row" "$col"; dim; fg 100 116 139; printf '%s' "$info"; reset_all
+}
+
+# ---- lightweight starfield (fast, no heavy loops) ----------
+draw_stars_fast() {
+  local W H n i; W=$(term_w); H=$(term_h)
+  n=$(( W * H / 60 ))   # lighter density
+  local chars=('·' '✦' '⋆' '˖' '.')
+  for (( i=0; i<n; i++ )); do
+    local r=$(( RANDOM % H + 1 )) c=$(( RANDOM % W + 1 ))
+    move_to "$r" "$c"
+    case $(( RANDOM % 3 )) in
+      0) fg 70 70 110 ;; 1) fg 100 100 150 ;; 2) fg 130 130 180 ;;
+    esac
+    printf '%s' "${chars[$(( RANDOM % 5 ))]}"
+  done
+  reset_all
+}
+
+# ---- epic splash (SAFE: fast, can't hang) ------------------
+epic_splash() {
+  # If the terminal is tiny or not a tty, skip animation entirely.
+  clear_scr
+  local W H; W=$(term_w); H=$(term_h)
+  if [ "$W" -lt 54 ] || [ "$H" -lt 16 ]; then return; fi
+
+  local col=$(( (W - LOGO_W) / 2 )); [ "$col" -lt 1 ] && col=1
+  local top=$(( (H - LOGO_H) / 2 - 2 )); [ "$top" -lt 1 ] && top=1
+
+  # starfield backdrop (single fast pass)
+  draw_stars_fast
+
+  # one shooting star (backgrounded, won't block)
+  ( shooting_star ) 2>/dev/null &
+  local ss=$!
+
+  # logo gradient sweep (short)
+  local s
+  for s in 0 20 40 60 40 20 0; do
+    paint_logo "$top" "$col" "$s"
+    sleep 0.03
+  done
+  wait "$ss" 2>/dev/null || true
+
+  # tagline typewriter (fast)
+  local tag="N E B U L A   A I   P L A T F O R M"
+  local tcol=$(( (W - ${#tag}) / 2 )); [ "$tcol" -lt 1 ] && tcol=1
+  typewriter "$(( top + LOGO_H + 1 ))" "$tcol" "$tag" 148 163 184 0.010
+
+  # subtitle
+  local sub="✦  Powerful Bot & Panel Platform  ✦"
+  local scol=$(( (W - ${#sub}) / 2 )); [ "$scol" -lt 1 ] && scol=1
+  move_to "$(( top + LOGO_H + 3 ))" "$scol"; dim; fg 120 130 160; printf '%s' "$sub"; reset_all
+  sleep 0.5
+}
+
+# ---- glow pulse for selected button (light) ----------------
+pulse_selected() {  # $1 row $2 col $3 text
+  local row=$1 col=$2 text=$3
+  # single-frame highlight (no loop → zero lag)
+  move_to "$row" "$col"
+  grad_color 30; printf '▸ '
+  bg 70 62 140; fg 255 255 255; bold
+  printf ' %-44s ' "$text"
+  reset_all
+}
+
+# ---- bottom status bar -------------------------------------
+draw_statusbar() {  # $1 = hint text
+  local W H; W=$(term_w); H=$(term_h)
+  local hint="${1:-  ↑ ↓  navigate    ⏎  select    q  quit}"
+  move_to "$H" 1
+  bg 30 30 50; fg 148 163 184
+  printf '%-*s' "$W" "  ◈ Nebula AI Platform${hint}"
+  reset_all
+}
+
+# ---- arrow-key menu (with glow + status bar) ---------------
 MENU_RESULT=-1
 read_key() {
   local k rest
   IFS= read -rsn1 k </dev/tty || true
   if [ "$k" = "$ESC" ]; then
     read -rsn2 -t 0.001 rest </dev/tty || true
-    case "$rest" in
-      '[A') echo up ;; '[B') echo down ;;
-      '[C') echo right ;; '[D') echo left ;; *) echo esc ;;
-    esac
+    case "$rest" in '[A') echo up ;; '[B') echo down ;; '[C') echo right ;; '[D') echo left ;; *) echo esc ;; esac
   elif [ -z "$k" ]; then echo enter
   else case "$k" in q|Q) echo quit ;; *) echo other ;; esac
   fi
 }
 
+MENU_PREV=-1
 draw_menu() {
   local W; W=$(term_w)
   local n=${#MENU_ITEMS[@]}
   local boxw=50
   local col=$(( (W - boxw) / 2 )); [ "$col" -lt 1 ] && col=1
-
-  # title
-  move_to "$MENU_TOP" "$col"
-  bold; fg 203 213 225; printf '  %s' "$MENU_TITLE"; reset_all
-
+  move_to "$MENU_TOP" "$col"; bold; fg 203 213 225; printf '  %s' "$MENU_TITLE"; reset_all
   local start=$(( MENU_TOP + 2 ))
   local i
   for (( i=0; i<n; i++ )); do
     local row=$(( start + i ))
-    move_to "$row" "$col"
     if [ "$i" -eq "$MENU_SEL" ]; then
-      # selected → gradient-edged highlighted button
-      grad_color 30; printf '▸ '
-      bg 60 55 120; fg 255 255 255; bold
-      printf ' %-44s ' "${MENU_ITEMS[$i]}"
-      reset_all
+      # glow pulse only on the newly-selected row (cheap, no loop lag)
+      pulse_selected "$row" "$col" "${MENU_ITEMS[$i]}"
     else
-      printf '  '; fg 160 170 190
-      printf ' %-44s ' "${MENU_ITEMS[$i]}"
-      reset_all
+      move_to "$row" "$col"; printf '  '; fg 160 170 190
+      printf ' %-44s ' "${MENU_ITEMS[$i]}"; reset_all
     fi
   done
-
-  # hint
-  local hrow=$(( start + n + 1 ))
-  move_to "$hrow" "$col"
-  dim; fg 100 116 139; printf '  ↑ ↓  navigate    ⏎  select    q  quit'; reset_all
+  draw_statusbar
 }
 
 run_menu() {
-  MENU_ITEMS=("$@"); MENU_SEL=0
+  MENU_ITEMS=("$@"); MENU_SEL=0; MENU_PREV=-1
   local n=${#MENU_ITEMS[@]}
   hide_cursor; draw_header; draw_menu
   while true; do
@@ -596,21 +776,57 @@ run_menu() {
   done
 }
 
-# ---- info card screen --------------------------------------
-info_screen() {  # $1 title, $2.. lines
+# ---- 3D-ish info card --------------------------------------
+# Draws a bordered card with a drop shadow for the success screen.
+draw_card() {  # $1 top $2 left $3 width $4 height $5 title
+  local top=$1 left=$2 w=$3 h=$4 title=$5 i
+  # shadow (offset by 1,2)
+  for (( i=1; i<h; i++ )); do
+    move_to "$(( top+i+1 ))" "$(( left+2 ))"; bg 15 15 25; printf '%*s' "$w" ''; reset_all
+  done
+  # card body
+  move_to "$top" "$left"; grad_color 20; printf '╭'
+  for (( i=0; i<w-2; i++ )); do grad_color $(( 20+i*60/(w-2) )); printf '─'; done
+  grad_color 80; printf '╮'; reset_all
+  for (( i=1; i<h-1; i++ )); do
+    move_to "$(( top+i ))" "$left"; grad_color 20; printf '│'; reset_all
+    move_to "$(( top+i ))" "$(( left+w-1 ))"; grad_color 80; printf '│'; reset_all
+  done
+  move_to "$(( top+h-1 ))" "$left"; grad_color 30; printf '╰'
+  for (( i=0; i<w-2; i++ )); do grad_color $(( 30+i*50/(w-2) )); printf '─'; done
+  grad_color 90; printf '╯'; reset_all
+  # title
+  move_to "$top" "$(( left+2 ))"; bold; fg 203 213 225; printf ' %s ' "$title"; reset_all
+}
+
+# ---- success screen with card ------------------------------
+success_card() {  # passes lines as args
   draw_header
-  local W; W=$(term_w); local boxw=50
-  local col=$(( (W - boxw)/2 )); [ "$col" -lt 1 ] && col=1
-  local row=$MENU_TOP
-  local title="$1"; shift
+  local W; W=$(term_w)
+  local cw=54 ch=$(( $# + 4 ))
+  local left=$(( (W - cw)/2 )); [ "$left" -lt 1 ] && left=1
+  local top=$MENU_TOP
+  draw_card "$top" "$left" "$cw" "$ch" "🎉  $(t is_live)"
+  local i=2
+  for line in "$@"; do
+    move_to "$(( top+i ))" "$(( left+3 ))"; fg 200 210 230; printf '%s' "$line"; reset_all
+    i=$(( i+1 ))
+  done
+  draw_statusbar "    $(t press_enter)"
+  read -rsn1 _ </dev/tty || true
+}
+
+# ---- plain info screen -------------------------------------
+info_screen() {
+  draw_header
+  local W; W=$(term_w); local col=$(( (W-50)/2 )); [ "$col" -lt 1 ] && col=1
+  local row=$MENU_TOP; local title="$1"; shift
   move_to "$row" "$col"; bold; fg 203 213 225; printf '  %s' "$title"; reset_all
   local i=2
   for line in "$@"; do
-    move_to "$(( row+i ))" "$col"; fg 148 163 184; printf '  %s' "$line"; reset_all
-    i=$(( i+1 ))
+    move_to "$(( row+i ))" "$col"; fg 148 163 184; printf '  %s' "$line"; reset_all; i=$(( i+1 ))
   done
-  move_to "$(( row+i+1 ))" "$col"; dim; fg 100 116 139
-  printf '  %s' "$(t press_enter)"; reset_all
+  draw_statusbar "    $(t press_enter)"
   read -rsn1 _ </dev/tty || true
 }
 
@@ -858,36 +1074,30 @@ EOF
   ok "'nebula' command ready"
 }
 
-# ---- install with animated progress bar --------------------
+# ---- install with progress + planet spinner + card --------
 do_install() {
   draw_header
-  local W; W=$(term_w); local boxw=50
-  local col=$(( (W-boxw)/2 )); [ "$col" -lt 1 ] && col=1
+  local W; W=$(term_w); local col=$(( (W-50)/2 )); [ "$col" -lt 1 ] && col=1
   local prow=$MENU_TOP
-  local srow=$(( MENU_TOP + 2 ))
 
-  draw_progress "$prow" "$col" 5 "$(t installing_docker)"
+  draw_progress "$prow" "$col" 8 "$(t installing_docker)"
   install_docker_q
-  draw_progress "$prow" "$col" 40 "$(t docker_present)     "
-
-  draw_progress "$prow" "$col" 50 "$(t preparing_config)   "
+  draw_progress "$prow" "$col" 40 "$(t docker_present)        "
+  draw_progress "$prow" "$col" 52 "$(t preparing_config)      "
   write_env; write_compose
-  draw_progress "$prow" "$col" 60 "$(t config_generated)   "
-
-  draw_progress "$prow" "$col" 70 "$(t pulling_image)      "
+  draw_progress "$prow" "$col" 62 "$(t config_generated)      "
+  draw_progress "$prow" "$col" 72 "$(t pulling_image)         "
   docker pull "$IMAGE" >/dev/null 2>&1
-  draw_progress "$prow" "$col" 88 "$(t image_pulled)       "
-
-  draw_progress "$prow" "$col" 94 "$(t starting)           "
+  draw_progress "$prow" "$col" 90 "$(t image_pulled)          "
+  draw_progress "$prow" "$col" 96 "$(t starting)              "
   docker compose --project-directory "$APP_DIR" -f "$COMPOSE_FILE" up -d >/dev/null 2>&1
   install_cli
-  draw_progress "$prow" "$col" 100 "$(t container_up)       "
-  sleep 0.8
+  draw_progress "$prow" "$col" 100 "$(t container_up)          "
+  sleep 0.7
 
   local ip; ip="$(public_ip)"
   local url="http://${ip}:${HOST_PORT:-$DEFAULT_PORT}"
-  info_screen "🎉  $(t is_live)" \
-    "" \
+  success_card \
     "$(t panel_url):  $url" \
     "$(t username):   ${ADMIN_USERNAME}" \
     "$(t password):   ${ADMIN_PASSWORD}" \
@@ -905,11 +1115,10 @@ do_update() {
   local W; W=$(term_w); local col=$(( (W-50)/2 )); [ "$col" -lt 1 ] && col=1
   draw_progress "$MENU_TOP" "$col" 30 "$(t updating)"
   docker pull "$IMAGE" >/dev/null 2>&1
-  draw_progress "$MENU_TOP" "$col" 80 "$(t updating)"
+  draw_progress "$MENU_TOP" "$col" 80 "$(t updating)  "
   docker compose --project-directory "$APP_DIR" -f "$COMPOSE_FILE" up -d >/dev/null 2>&1
-  draw_progress "$MENU_TOP" "$col" 100 "$(t updated)"
-  sleep 0.6
-  info_screen "$(t menu_update)" "✓  $(t updated)"
+  draw_progress "$MENU_TOP" "$col" 100 "$(t updated)   "
+  sleep 0.6; info_screen "$(t menu_update)" "✓  $(t updated)"
 }
 
 do_ssl() {
@@ -930,30 +1139,25 @@ do_ssl() {
 }
 
 do_status() {
-  local out="-"
-  [ -d "$APP_DIR" ] && out=$(docker compose --project-directory "$APP_DIR" ps 2>/dev/null | head -4 || echo "-")
+  local out="-"; [ -d "$APP_DIR" ] && out=$(docker compose --project-directory "$APP_DIR" ps 2>/dev/null | head -4 || echo "-")
   clear_scr; show_cursor; draw_header; echo ""; echo "$out"; echo ""
   read -r -p "  $(t press_enter) " _ </dev/tty; hide_cursor
 }
-
 do_logs() {
   if [ ! -d "$APP_DIR" ]; then info_screen "$(t menu_logs)" "$(t not_installed)"; return; fi
   clear_scr; show_cursor
   docker compose --project-directory "$APP_DIR" logs --tail=100 2>/dev/null || true
   echo ""; read -r -p "  $(t press_enter) " _ </dev/tty; hide_cursor
 }
-
 do_password() {
   local p="—"; [ -f "$ENV_FILE" ] && p=$(grep -E '^ADMIN_PASSWORD=' "$ENV_FILE" | cut -d= -f2-)
   info_screen "🔑  $(t menu_password)" "" "$(t password):  $p"
 }
-
 do_restart() {
   if [ ! -d "$APP_DIR" ]; then info_screen "$(t menu_restart)" "$(t not_installed)"; return; fi
   docker compose --project-directory "$APP_DIR" restart >/dev/null 2>&1
   info_screen "$(t menu_restart)" "✓  $(t restarted)"
 }
-
 do_uninstall() {
   if [ ! -d "$APP_DIR" ]; then info_screen "$(t menu_uninstall)" "$(t not_installed)"; return; fi
   MENU_TITLE="$(t confirm_uninstall)"
@@ -965,42 +1169,181 @@ do_uninstall() {
     info_screen "$(t menu_uninstall)" "✓  $(t removed)"
   fi
 }
-
 pick_language() {
   MENU_TITLE="Choose your language"
   run_menu "English" "Türkçe" "中文 (Chinese)" "Deutsch" "Svenska" || { clear_scr; exit 0; }
-  case "$MENU_RESULT" in
-    0) LANG="en" ;; 1) LANG="tr" ;; 2) LANG="zh" ;; 3) LANG="de" ;; 4) LANG="sv" ;; *) LANG="en" ;;
-  esac
+  case "$MENU_RESULT" in 0) LANG="en";;1) LANG="tr";;2) LANG="zh";;3) LANG="de";;4) LANG="sv";;*) LANG="en";; esac
 }
-
 main_menu() {
   while true; do
     MENU_TITLE="$(t menu_title)"
     run_menu \
-      "🚀   $(t menu_install)" \
-      "⬆️    $(t menu_update)" \
-      "🔒   $(t menu_ssl)" \
-      "📊   $(t menu_status)" \
-      "📜   $(t menu_logs)" \
-      "🔑   $(t menu_password)" \
-      "🔄   $(t menu_restart)" \
-      "🗑    $(t menu_uninstall)" \
-      "❌   $(t menu_exit)" \
+      "🚀   $(t menu_install)" "⬆️    $(t menu_update)" "🔒   $(t menu_ssl)" \
+      "📊   $(t menu_status)" "📜   $(t menu_logs)" "🔑   $(t menu_password)" \
+      "🔄   $(t menu_restart)" "🗑    $(t menu_uninstall)" "❌   $(t menu_exit)" \
       || { clear_scr; exit 0; }
     case "$MENU_RESULT" in
-      0) do_install ;; 1) do_update ;; 2) do_ssl ;;
-      3) do_status ;; 4) do_logs ;; 5) do_password ;;
-      6) do_restart ;; 7) do_uninstall ;; 8) clear_scr; exit 0 ;;
+      0) do_install;;1) do_update;;2) do_ssl;;3) do_status;;4) do_logs;;
+      5) do_password;;6) do_restart;;7) do_uninstall;;8) clear_scr; exit 0;;
     esac
   done
 }
-
-# ============================================================
 main() {
   alt_screen; hide_cursor
-  splash            # cosmic animated intro
+  epic_splash
   pick_language
   main_menu
 }
+
+# ---- universal content card --------------------------------
+# A polished framed card centered under the header. Every internal
+# screen (status, logs, password, ...) renders through this so they all
+# look consistent and premium. Lines starting with special markers get
+# icons/colors.
+card_screen() {  # $1 icon+title ; $2.. body lines
+  draw_header
+  local W; W=$(term_w)
+  local title="$1"; shift
+  local -a lines=("$@")
+  # card size based on content
+  local cw=60 i maxw=0
+  for line in "${lines[@]}"; do [ "${#line}" -gt "$maxw" ] && maxw=${#line}; done
+  [ $(( maxw + 8 )) -gt "$cw" ] && cw=$(( maxw + 8 ))
+  [ "$cw" -gt $(( W - 4 )) ] && cw=$(( W - 4 ))
+  local ch=$(( ${#lines[@]} + 4 ))
+  local left=$(( (W - cw)/2 )); [ "$left" -lt 1 ] && left=1
+  local top=$MENU_TOP
+
+  # drop shadow
+  for (( i=1; i<ch; i++ )); do
+    move_to "$(( top+i+1 ))" "$(( left+2 ))"; bg 12 12 20; printf '%*s' "$cw" ''; reset_all
+  done
+  # gradient border
+  move_to "$top" "$left"; grad_color 15; printf '╭'
+  for (( i=0; i<cw-2; i++ )); do grad_color $(( 15+i*70/(cw-2) )); printf '─'; done
+  grad_color 85; printf '╮'; reset_all
+  for (( i=1; i<ch-1; i++ )); do
+    move_to "$(( top+i ))" "$left"; grad_color 15; printf '│'
+    # fill line background subtly
+    fg 200 210 230; printf '%*s' "$(( cw-2 ))" ''
+    grad_color 85; printf '│'; reset_all
+  done
+  move_to "$(( top+ch-1 ))" "$left"; grad_color 25; printf '╰'
+  for (( i=0; i<cw-2; i++ )); do grad_color $(( 25+i*60/(cw-2) )); printf '─'; done
+  grad_color 95; printf '╯'; reset_all
+  # title bar
+  move_to "$top" "$(( left+2 ))"; bg 60 55 120; bold; fg 255 255 255
+  printf ' %s ' "$title"; reset_all
+  # body
+  i=2
+  for line in "${lines[@]}"; do
+    move_to "$(( top+i ))" "$(( left+3 ))"
+    # color code by leading marker
+    case "$line" in
+      "✓"*) fg 56 189 140 ;;
+      "✗"*|"⚠"*) fg 248 113 113 ;;
+      "◈"*) fg 129 140 248 ;;
+      *) fg 200 210 230 ;;
+    esac
+    printf '%s' "$line"; reset_all
+    i=$(( i+1 ))
+  done
+  draw_statusbar "    $(t press_enter)"
+  read -rsn1 _ </dev/tty || true
+}
+
+# ---- redesigned: status ------------------------------------
+do_status() {
+  local state="✗  $(t not_installed)" ver="—" up="—"
+  if [ -d "$APP_DIR" ]; then
+    local running; running=$(docker ps --filter "name=nebula" --format '{{.Status}}' 2>/dev/null | head -1)
+    if [ -n "$running" ]; then state="✓  Running"; up="$running"; else state="⚠  Stopped"; fi
+    ver=$(docker inspect --format '{{ index .Config.Labels "org.opencontainers.image.version" }}' "$IMAGE" 2>/dev/null || echo "latest")
+  fi
+  local ip; ip="$(public_ip)"
+  card_screen "📊  $(t menu_status)" \
+    "" \
+    "◈  Service    : $state" \
+    "◈  Uptime     : $up" \
+    "◈  Version    : $ver" \
+    "◈  Panel URL  : http://${ip}:${HOST_PORT:-$DEFAULT_PORT}" \
+    ""
+}
+
+# ---- redesigned: password ----------------------------------
+do_password() {
+  local p="—" u="admin"
+  if [ -f "$ENV_FILE" ]; then
+    p=$(grep -E '^ADMIN_PASSWORD=' "$ENV_FILE" | cut -d= -f2-)
+    u=$(grep -E '^ADMIN_USERNAME=' "$ENV_FILE" | cut -d= -f2-)
+  fi
+  card_screen "🔑  $(t menu_password)" \
+    "" \
+    "◈  $(t username):  $u" \
+    "◈  $(t password):  $p" \
+    ""
+}
+
+# ---- redesigned: restart -----------------------------------
+do_restart() {
+  if [ ! -d "$APP_DIR" ]; then card_screen "🔄  $(t menu_restart)" "" "✗  $(t not_installed)" ""; return; fi
+  draw_header
+  local W; W=$(term_w); local col=$(( (W-50)/2 )); [ "$col" -lt 1 ] && col=1
+  spin_planet "$MENU_TOP" "$col" "$(t menu_restart)..." \
+    docker compose --project-directory "$APP_DIR" restart
+  card_screen "🔄  $(t menu_restart)" "" "✓  $(t restarted)" ""
+}
+
+# ---- redesigned: update ------------------------------------
+do_update() {
+  if [ ! -d "$APP_DIR" ]; then card_screen "⬆️  $(t menu_update)" "" "✗  $(t not_installed)" ""; return; fi
+  draw_header
+  local W; W=$(term_w); local col=$(( (W-50)/2 )); [ "$col" -lt 1 ] && col=1
+  draw_progress "$MENU_TOP" "$col" 30 "$(t updating)"
+  docker pull "$IMAGE" >/dev/null 2>&1
+  draw_progress "$MENU_TOP" "$col" 80 "$(t updating)  "
+  docker compose --project-directory "$APP_DIR" -f "$COMPOSE_FILE" up -d >/dev/null 2>&1
+  draw_progress "$MENU_TOP" "$col" 100 "$(t updated)   "
+  sleep 0.6
+  card_screen "⬆️  $(t menu_update)" "" "✓  $(t updated)" ""
+}
+
+# ---- redesigned: logs (framed, live) -----------------------
+do_logs() {
+  if [ ! -d "$APP_DIR" ]; then card_screen "📜  $(t menu_logs)" "" "✗  $(t not_installed)" ""; return; fi
+  draw_header
+  local W; W=$(term_w); local left=$(( (W-70)/2 )); [ "$left" -lt 1 ] && left=1
+  move_to "$MENU_TOP" "$left"; bg 60 55 120; bold; fg 255 255 255
+  printf ' 📜  %s ' "$(t menu_logs)"; reset_all
+  # show recent logs in a dim panel
+  local row=$(( MENU_TOP + 2 ))
+  local line
+  while IFS= read -r line; do
+    [ "$row" -ge $(( $(term_h) - 2 )) ] && break
+    move_to "$row" "$left"; fg 130 140 165
+    printf '%.70s' "$line"; reset_all
+    row=$(( row+1 ))
+  done < <(docker compose --project-directory "$APP_DIR" logs --tail=14 2>/dev/null || echo "-")
+  draw_statusbar "    $(t press_enter)"
+  read -rsn1 _ </dev/tty || true
+}
+
+# ---- redesigned: uninstall ---------------------------------
+do_uninstall() {
+  if [ ! -d "$APP_DIR" ]; then card_screen "🗑  $(t menu_uninstall)" "" "✗  $(t not_installed)" ""; return; fi
+  MENU_TITLE="⚠  $(t confirm_uninstall)"
+  run_menu "$(t menu_exit)" "🗑  $(t menu_uninstall)" || return
+  if [ "$MENU_RESULT" = "1" ]; then
+    draw_header
+    local W; W=$(term_w); local col=$(( (W-50)/2 )); [ "$col" -lt 1 ] && col=1
+    spin_planet "$MENU_TOP" "$col" "$(t menu_uninstall)..." bash -c "
+      docker compose --project-directory '$APP_DIR' down -v >/dev/null 2>&1 || true
+      docker rmi -f '$IMAGE' >/dev/null 2>&1 || true
+      rm -rf '$APP_DIR'; rm -f '$BIN_PATH'"
+    card_screen "🗑  $(t menu_uninstall)" "" "✓  $(t removed)" ""
+  fi
+}
+
+
+# ---- run ---------------------------------------------------
 main "$@"
