@@ -58,314 +58,372 @@ grad_color() {
 }
 # shifted gradient for animation (offset 0..100 rotates the palette)
 grad_color_shift() { local p=$(( ($1 + ${2:-0}) % 100 )); grad_color "$p"; }
-# ---- translations (5 LTR languages) ---------
-declare -A T_en T_tr T_zh T_de T_sv
+# ---- translations (6 languages incl. Persian) ---------
+declare -A T_en T_tr T_zh T_de T_sv T_fa
 
 T_en["choose_lang"]="Choose your language"
 T_tr["choose_lang"]="Dilinizi seçin"
 T_zh["choose_lang"]="选择语言"
 T_de["choose_lang"]="Sprache wählen"
 T_sv["choose_lang"]="Välj språk"
+T_fa["choose_lang"]="زبان را انتخاب کنید"
 
 T_en["menu_title"]="Management Menu"
 T_tr["menu_title"]="Yönetim Menüsü"
 T_zh["menu_title"]="管理菜单"
 T_de["menu_title"]="Verwaltungsmenü"
 T_sv["menu_title"]="Hanteringsmeny"
+T_fa["menu_title"]="منوی مدیریت"
 
 T_en["menu_install"]="Install / Setup"
 T_tr["menu_install"]="Kur / Kurulum"
 T_zh["menu_install"]="安装 / 设置"
 T_de["menu_install"]="Installieren / Einrichten"
 T_sv["menu_install"]="Installera / Konfigurera"
+T_fa["menu_install"]="نصب / راه‌اندازی"
 
 T_en["menu_update"]="Update"
 T_tr["menu_update"]="Güncelle"
 T_zh["menu_update"]="更新"
 T_de["menu_update"]="Aktualisieren"
 T_sv["menu_update"]="Uppdatera"
+T_fa["menu_update"]="به‌روزرسانی"
 
 T_en["menu_ssl"]="Enable HTTPS (SSL)"
 T_tr["menu_ssl"]="HTTPS (SSL) etkinleştir"
 T_zh["menu_ssl"]="启用 HTTPS (SSL)"
 T_de["menu_ssl"]="HTTPS (SSL) aktivieren"
 T_sv["menu_ssl"]="Aktivera HTTPS (SSL)"
+T_fa["menu_ssl"]="فعال‌سازی HTTPS (SSL)"
 
 T_en["menu_status"]="Status"
 T_tr["menu_status"]="Durum"
 T_zh["menu_status"]="状态"
 T_de["menu_status"]="Status"
 T_sv["menu_status"]="Status"
+T_fa["menu_status"]="وضعیت"
 
 T_en["menu_logs"]="View logs"
 T_tr["menu_logs"]="Günlükleri göster"
 T_zh["menu_logs"]="查看日志"
 T_de["menu_logs"]="Logs anzeigen"
 T_sv["menu_logs"]="Visa loggar"
+T_fa["menu_logs"]="نمایش لاگ‌ها"
 
 T_en["menu_password"]="Show panel password"
 T_tr["menu_password"]="Panel şifresini göster"
 T_zh["menu_password"]="显示面板密码"
 T_de["menu_password"]="Panel-Passwort anzeigen"
 T_sv["menu_password"]="Visa panellösenord"
+T_fa["menu_password"]="نمایش رمز پنل"
 
 T_en["menu_restart"]="Restart"
 T_tr["menu_restart"]="Yeniden başlat"
 T_zh["menu_restart"]="重启"
 T_de["menu_restart"]="Neustart"
 T_sv["menu_restart"]="Starta om"
+T_fa["menu_restart"]="ری‌استارت"
 
 T_en["menu_uninstall"]="Uninstall"
 T_tr["menu_uninstall"]="Kaldır"
 T_zh["menu_uninstall"]="卸载"
 T_de["menu_uninstall"]="Deinstallieren"
 T_sv["menu_uninstall"]="Avinstallera"
+T_fa["menu_uninstall"]="حذف کامل"
 
 T_en["menu_exit"]="Exit"
 T_tr["menu_exit"]="Çıkış"
 T_zh["menu_exit"]="退出"
 T_de["menu_exit"]="Beenden"
 T_sv["menu_exit"]="Avsluta"
+T_fa["menu_exit"]="خروج"
 
 T_en["prompt_choice"]="Enter option number"
 T_tr["prompt_choice"]="Seçenek numarasını girin"
 T_zh["prompt_choice"]="输入选项编号"
 T_de["prompt_choice"]="Optionsnummer eingeben"
 T_sv["prompt_choice"]="Ange alternativnummer"
+T_fa["prompt_choice"]="شماره گزینه را وارد کنید"
 
 T_en["checking_sys"]="Checking system"
 T_tr["checking_sys"]="Sistem kontrol ediliyor"
 T_zh["checking_sys"]="检查系统"
 T_de["checking_sys"]="System wird geprüft"
 T_sv["checking_sys"]="Kontrollerar system"
+T_fa["checking_sys"]="بررسی سیستم"
 
 T_en["installing_docker"]="Installing Docker"
 T_tr["installing_docker"]="Docker kuruluyor"
 T_zh["installing_docker"]="安装 Docker"
 T_de["installing_docker"]="Docker wird installiert"
 T_sv["installing_docker"]="Installerar Docker"
+T_fa["installing_docker"]="نصب Docker"
 
 T_en["docker_present"]="Docker already present"
 T_tr["docker_present"]="Docker zaten mevcut"
 T_zh["docker_present"]="Docker 已存在"
 T_de["docker_present"]="Docker bereits vorhanden"
 T_sv["docker_present"]="Docker finns redan"
+T_fa["docker_present"]="Docker از قبل نصب است"
 
 T_en["docker_installed"]="Docker installed"
 T_tr["docker_installed"]="Docker kuruldu"
 T_zh["docker_installed"]="Docker 已安装"
 T_de["docker_installed"]="Docker installiert"
 T_sv["docker_installed"]="Docker installerad"
+T_fa["docker_installed"]="Docker نصب شد"
 
 T_en["preparing_config"]="Preparing configuration"
 T_tr["preparing_config"]="Yapılandırma hazırlanıyor"
 T_zh["preparing_config"]="准备配置"
 T_de["preparing_config"]="Konfiguration wird vorbereitet"
 T_sv["preparing_config"]="Förbereder konfiguration"
+T_fa["preparing_config"]="آماده‌سازی تنظیمات"
 
 T_en["config_kept"]="Existing settings kept"
 T_tr["config_kept"]="Mevcut ayarlar korundu"
 T_zh["config_kept"]="保留现有设置"
 T_de["config_kept"]="Vorhandene Einstellungen beibehalten"
 T_sv["config_kept"]="Befintliga inställningar behållna"
+T_fa["config_kept"]="تنظیمات موجود حفظ شد"
 
 T_en["config_generated"]="Config generated (secure random)"
 T_tr["config_generated"]="Yapılandırma oluşturuldu"
 T_zh["config_generated"]="已生成配置"
 T_de["config_generated"]="Konfiguration erstellt"
 T_sv["config_generated"]="Konfiguration skapad"
+T_fa["config_generated"]="تنظیمات ساخته شد (رمز امن تصادفی)"
 
 T_en["compose_written"]="Compose file written"
 T_tr["compose_written"]="Compose dosyası yazıldı"
 T_zh["compose_written"]="已写入 compose 文件"
 T_de["compose_written"]="Compose-Datei geschrieben"
 T_sv["compose_written"]="Compose-fil skriven"
+T_fa["compose_written"]="فایل اجرا نوشته شد"
 
 T_en["pulling_image"]="Pulling application image"
 T_tr["pulling_image"]="Uygulama imajı çekiliyor"
 T_zh["pulling_image"]="拉取应用镜像"
 T_de["pulling_image"]="Anwendungs-Image wird geladen"
 T_sv["pulling_image"]="Hämtar applikationsavbild"
+T_fa["pulling_image"]="دریافت برنامه"
 
 T_en["image_pulled"]="Image pulled"
 T_tr["image_pulled"]="İmaj çekildi"
 T_zh["image_pulled"]="镜像已拉取"
 T_de["image_pulled"]="Image geladen"
 T_sv["image_pulled"]="Avbild hämtad"
+T_fa["image_pulled"]="برنامه دریافت شد"
 
 T_en["starting"]="Starting Nebula"
 T_tr["starting"]="Nebula başlatılıyor"
 T_zh["starting"]="启动 Nebula"
 T_de["starting"]="Nebula wird gestartet"
 T_sv["starting"]="Startar Nebula"
+T_fa["starting"]="راه‌اندازی Nebula"
 
 T_en["container_up"]="Container is up"
 T_tr["container_up"]="Konteyner çalışıyor"
 T_zh["container_up"]="容器已启动"
 T_de["container_up"]="Container läuft"
 T_sv["container_up"]="Container igång"
+T_fa["container_up"]="کانتینر اجرا شد"
 
 T_en["cli_ready"]="nebula command ready"
 T_tr["cli_ready"]="nebula komutu hazır"
 T_zh["cli_ready"]="nebula 命令就绪"
 T_de["cli_ready"]="nebula-Befehl bereit"
 T_sv["cli_ready"]="nebula-kommando redo"
+T_fa["cli_ready"]="دستور nebula آماده شد"
 
 T_en["is_live"]="Nebula AI Platform is LIVE"
 T_tr["is_live"]="Nebula AI Platform ÇALIŞIYOR"
 T_zh["is_live"]="Nebula AI Platform 已上线"
 T_de["is_live"]="Nebula AI Platform ist LIVE"
 T_sv["is_live"]="Nebula AI Platform är LIVE"
+T_fa["is_live"]="Nebula AI Platform فعال شد"
 
 T_en["panel_url"]="Panel URL"
 T_tr["panel_url"]="Panel URL"
 T_zh["panel_url"]="面板地址"
 T_de["panel_url"]="Panel-URL"
 T_sv["panel_url"]="Panel-URL"
+T_fa["panel_url"]="آدرس پنل"
 
 T_en["username"]="Username"
 T_tr["username"]="Kullanıcı adı"
 T_zh["username"]="用户名"
 T_de["username"]="Benutzername"
 T_sv["username"]="Användarnamn"
+T_fa["username"]="نام کاربری"
 
 T_en["password"]="Password"
 T_tr["password"]="Şifre"
 T_zh["password"]="密码"
 T_de["password"]="Passwort"
 T_sv["password"]="Lösenord"
+T_fa["password"]="رمز عبور"
 
 T_en["change_later"]="(change both later inside the panel)"
 T_tr["change_later"]="(ikisini de panelde değiştirebilirsin)"
 T_zh["change_later"]="(稍后可在面板中更改)"
 T_de["change_later"]="(beides später im Panel änderbar)"
 T_sv["change_later"]="(ändra båda senare i panelen)"
+T_fa["change_later"]="(بعداً می‌تونی داخل پنل عوضشون کنی)"
 
 T_en["next_steps"]="Next steps"
 T_tr["next_steps"]="Sonraki adımlar"
 T_zh["next_steps"]="后续步骤"
 T_de["next_steps"]="Nächste Schritte"
 T_sv["next_steps"]="Nästa steg"
+T_fa["next_steps"]="قدم‌های بعدی"
 
 T_en["step1"]="Open the panel and log in."
 T_tr["step1"]="Paneli aç ve giriş yap."
 T_zh["step1"]="打开面板并登录。"
 T_de["step1"]="Panel öffnen und anmelden."
 T_sv["step1"]="Öppna panelen och logga in."
+T_fa["step1"]="پنل رو باز کن و وارد شو."
 
 T_en["step2"]="Connect your Telegram bot token."
 T_tr["step2"]="Telegram bot tokenini bağla."
 T_zh["step2"]="连接你的 Telegram 机器人令牌。"
 T_de["step2"]="Verbinde deinen Telegram-Bot-Token."
 T_sv["step2"]="Anslut din Telegram-bot-token."
+T_fa["step2"]="توکن ربات تلگرام رو وصل کن."
 
 T_en["step3"]="Change your username & password."
 T_tr["step3"]="Kullanıcı adı ve şifreni değiştir."
 T_zh["step3"]="更改用户名和密码。"
 T_de["step3"]="Ändere Benutzername & Passwort."
 T_sv["step3"]="Ändra användarnamn & lösenord."
+T_fa["step3"]="نام کاربری و رمز رو عوض کن."
 
 T_en["ssl_choose"]="Choose HTTPS method"
 T_tr["ssl_choose"]="HTTPS yöntemini seçin"
 T_zh["ssl_choose"]="选择 HTTPS 方式"
 T_de["ssl_choose"]="HTTPS-Methode wählen"
 T_sv["ssl_choose"]="Välj HTTPS-metod"
+T_fa["ssl_choose"]="روش HTTPS را انتخاب کنید"
 
 T_en["ssl_domain"]="With my own domain"
 T_tr["ssl_domain"]="Kendi alan adımla"
 T_zh["ssl_domain"]="使用我的域名"
 T_de["ssl_domain"]="Mit eigener Domain"
 T_sv["ssl_domain"]="Med min egen domän"
+T_fa["ssl_domain"]="با دامنه‌ی خودم"
 
 T_en["ssl_auto"]="Auto on this IP (no domain)"
 T_tr["ssl_auto"]="Bu IP'de otomatik"
 T_zh["ssl_auto"]="在此 IP 上自动"
 T_de["ssl_auto"]="Automatisch auf dieser IP"
 T_sv["ssl_auto"]="Auto på denna IP"
+T_fa["ssl_auto"]="خودکار روی همین IP (بدون دامنه)"
 
 T_en["ssl_enter_domain"]="Enter domain (e.g. panel.example.com)"
 T_tr["ssl_enter_domain"]="Alan adını girin"
 T_zh["ssl_enter_domain"]="输入域名"
 T_de["ssl_enter_domain"]="Domain eingeben"
 T_sv["ssl_enter_domain"]="Ange domän"
+T_fa["ssl_enter_domain"]="دامنه را وارد کنید (مثلاً panel.example.com)"
 
 T_en["ssl_done"]="HTTPS enabled! Panel now at:"
 T_tr["ssl_done"]="HTTPS etkin! Panel şimdi:"
 T_zh["ssl_done"]="HTTPS 已启用！面板现在位于："
 T_de["ssl_done"]="HTTPS aktiviert! Panel jetzt unter:"
 T_sv["ssl_done"]="HTTPS aktiverat! Panel nu på:"
+T_fa["ssl_done"]="HTTPS فعال شد! پنل الان اینجاست:"
 
 T_en["press_enter"]="Press Enter to return to menu"
 T_tr["press_enter"]="Menüye dönmek için Enter"
 T_zh["press_enter"]="按 Enter 返回菜单"
 T_de["press_enter"]="Enter drücken für Menü"
 T_sv["press_enter"]="Tryck Enter för meny"
+T_fa["press_enter"]="برای بازگشت به منو Enter بزنید"
 
 T_en["invalid_choice"]="Invalid choice"
 T_tr["invalid_choice"]="Geçersiz seçim"
 T_zh["invalid_choice"]="无效选择"
 T_de["invalid_choice"]="Ungültige Wahl"
 T_sv["invalid_choice"]="Ogiltigt val"
+T_fa["invalid_choice"]="گزینه نامعتبر"
 
 T_en["goodbye"]="Goodbye!"
 T_tr["goodbye"]="Hoşça kal!"
 T_zh["goodbye"]="再见！"
 T_de["goodbye"]="Auf Wiedersehen!"
 T_sv["goodbye"]="Hej då!"
+T_fa["goodbye"]="خداحافظ!"
 
 T_en["not_installed"]="Nebula is not installed yet. Choose Install first."
 T_tr["not_installed"]="Nebula henüz kurulmadı."
 T_zh["not_installed"]="Nebula 尚未安装。"
 T_de["not_installed"]="Nebula noch nicht installiert."
 T_sv["not_installed"]="Nebula är inte installerat än."
+T_fa["not_installed"]="Nebula هنوز نصب نشده. اول گزینه نصب رو بزنید."
 
 T_en["confirm_uninstall"]="Remove Nebula and ALL data? Type yes to confirm"
 T_tr["confirm_uninstall"]="Nebula ve TÜM veriler silinsin mi? yes yazın"
 T_zh["confirm_uninstall"]="删除 Nebula 和所有数据？输入 yes"
 T_de["confirm_uninstall"]="Nebula und ALLE Daten entfernen? yes eingeben"
 T_sv["confirm_uninstall"]="Ta bort Nebula och ALL data? Skriv yes"
+T_fa["confirm_uninstall"]="حذف کامل Nebula و همه داده‌ها؟ برای تأیید yes بنویسید"
 
 T_en["removed"]="Nebula removed."
 T_tr["removed"]="Nebula kaldırıldı."
 T_zh["removed"]="Nebula 已删除。"
 T_de["removed"]="Nebula entfernt."
 T_sv["removed"]="Nebula borttaget."
+T_fa["removed"]="Nebula حذف شد."
 
 T_en["cancelled"]="Cancelled."
 T_tr["cancelled"]="İptal edildi."
 T_zh["cancelled"]="已取消。"
 T_de["cancelled"]="Abgebrochen."
 T_sv["cancelled"]="Avbruten."
+T_fa["cancelled"]="لغو شد."
 
 T_en["updating"]="Updating..."
 T_tr["updating"]="Güncelleniyor..."
 T_zh["updating"]="正在更新..."
 T_de["updating"]="Wird aktualisiert..."
 T_sv["updating"]="Uppdaterar..."
+T_fa["updating"]="در حال به‌روزرسانی..."
 
 T_en["updated"]="Updated to latest. Your data is kept."
 T_tr["updated"]="Güncellendi. Verilerin korundu."
 T_zh["updated"]="已更新到最新。数据已保留。"
 T_de["updated"]="Aktualisiert. Deine Daten bleiben."
 T_sv["updated"]="Uppdaterad. Din data behålls."
+T_fa["updated"]="به آخرین نسخه به‌روزرسانی شد. داده‌ها حفظ شدن."
 
 T_en["restarted"]="Restarted."
 T_tr["restarted"]="Yeniden başlatıldı."
 T_zh["restarted"]="已重启。"
 T_de["restarted"]="Neu gestartet."
 T_sv["restarted"]="Omstartad."
+T_fa["restarted"]="ری‌استارت شد."
 
 T_en["telegram_ch"]="Telegram Channel"
 T_tr["telegram_ch"]="Telegram Kanalı"
 T_zh["telegram_ch"]="Telegram 频道"
 T_de["telegram_ch"]="Telegram-Kanal"
 T_sv["telegram_ch"]="Telegram-kanal"
+T_fa["telegram_ch"]="کانال تلگرام"
 
 T_en["powered_by"]="Powered by Nebula Technology"
 T_tr["powered_by"]="Nebula Teknolojisi"
 T_zh["powered_by"]="由 Nebula 技术驱动"
 T_de["powered_by"]="Angetrieben von Nebula"
 T_sv["powered_by"]="Drivs av Nebula"
+T_fa["powered_by"]="قدرت‌گرفته از Nebula"
+
+T_en["signature"]="⑂ Engineered by the Nebula AI Team"
+T_tr["signature"]="⑂ Nebula AI Ekibi tarafından geliştirildi"
+T_zh["signature"]="⑂ 由 Nebula AI 团队开发"
+T_de["signature"]="⑂ Entwickelt vom Nebula AI Team"
+T_sv["signature"]="⑂ Utvecklad av Nebula AI-teamet"
+T_fa["signature"]="⑂ توسعه‌یافته توسط تیم Nebula AI"
 
 t() {
   local key="$1"; local var="T_${LANG:-en}[$key]"; local val="${!var:-}"
@@ -1078,6 +1136,9 @@ NGINX
       fi
       docker compose up -d >/dev/null 2>&1
 
+      # Remember the HTTPS URL so the panel status screen can show it.
+      echo "https://$DOMAIN" > "$APP_DIR/.ssl_url" 2>/dev/null || true
+
       echo ""
       echo "  🎉 Done! Your panel is now at:  https://$DOMAIN"
       echo "     (http automatically redirects to https)"
@@ -1138,7 +1199,9 @@ do_install() {
     "" \
     "1.  $(t step1)" \
     "2.  $(t step2)" \
-    "3.  $(t step3)"
+    "3.  $(t step3)" \
+    "" \
+    "$(t signature)"
 }
 
 do_update() {
@@ -1202,9 +1265,9 @@ do_uninstall() {
   fi
 }
 pick_language() {
-  MENU_TITLE="Choose your language"
-  run_menu "English" "Türkçe" "中文 (Chinese)" "Deutsch" "Svenska" || { clear_scr; exit 0; }
-  case "$MENU_RESULT" in 0) LANG="en";;1) LANG="tr";;2) LANG="zh";;3) LANG="de";;4) LANG="sv";;*) LANG="en";; esac
+  MENU_TITLE="Choose your language / زبان را انتخاب کنید"
+  run_menu "English" "Türkçe" "中文 (Chinese)" "Deutsch" "Svenska" "فارسی (Persian)" || { clear_scr; exit 0; }
+  case "$MENU_RESULT" in 0) LANG="en";;1) LANG="tr";;2) LANG="zh";;3) LANG="de";;4) LANG="sv";;5) LANG="fa";;*) LANG="en";; esac
 }
 main_menu() {
   while true; do
@@ -1293,13 +1356,30 @@ do_status() {
     ver=$(docker inspect --format '{{ index .Config.Labels "org.opencontainers.image.version" }}' "$IMAGE" 2>/dev/null || echo "latest")
   fi
   local ip; ip="$(public_ip)"
-  card_screen "📊  $(t menu_status)" \
-    "" \
-    "◈  Service    : $state" \
-    "◈  Uptime     : $up" \
-    "◈  Version    : $ver" \
-    "◈  Panel URL  : http://${ip}:${HOST_PORT:-$DEFAULT_PORT}" \
-    ""
+  local http_url="http://${ip}:${HOST_PORT:-$DEFAULT_PORT}"
+  # If SSL was enabled, show the HTTPS address too (domain or IP-based).
+  local https_url=""
+  [ -f "$APP_DIR/.ssl_url" ] && https_url="$(cat "$APP_DIR/.ssl_url" 2>/dev/null)"
+  if [ -n "$https_url" ]; then
+    card_screen "📊  $(t menu_status)" \
+      "" \
+      "◈  Service     : $state" \
+      "◈  Uptime      : $up" \
+      "◈  Version     : $ver" \
+      "◈  HTTP URL    : $http_url" \
+      "✓  HTTPS URL   : $https_url" \
+      "" \
+      "$(t signature)"
+  else
+    card_screen "📊  $(t menu_status)" \
+      "" \
+      "◈  Service     : $state" \
+      "◈  Uptime      : $up" \
+      "◈  Version     : $ver" \
+      "◈  Panel URL   : $http_url" \
+      "" \
+      "$(t signature)"
+  fi
 }
 
 # ---- redesigned: password ----------------------------------
