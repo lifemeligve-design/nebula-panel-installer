@@ -9,7 +9,11 @@
 # live server stats. Arrow-key navigation. 5 languages.
 # ============================================================
 
-set -euo pipefail
+# NOTE: we deliberately do NOT use `set -e` here. This is a long-running
+# interactive TUI; a single non-zero exit from docker/apt/etc. must NOT
+# kill the whole app and drop the user back to the shell. We handle errors
+# locally instead.
+set -uo pipefail
 cd / 2>/dev/null || true
 
 IMAGE="weblinuxi/nebula-platform:latest"
@@ -54,7 +58,7 @@ grad_color() {
 }
 # shifted gradient for animation (offset 0..100 rotates the palette)
 grad_color_shift() { local p=$(( ($1 + ${2:-0}) % 100 )); grad_color "$p"; }
-# ---- translations (5 LTR languages, whiptail-safe) ---------
+# ---- translations (5 LTR languages) ---------
 declare -A T_en T_tr T_zh T_de T_sv
 
 T_en["choose_lang"]="Choose your language"
@@ -351,10 +355,20 @@ T_zh["restarted"]="已重启。"
 T_de["restarted"]="Neu gestartet."
 T_sv["restarted"]="Omstartad."
 
+T_en["telegram_ch"]="Telegram Channel"
+T_tr["telegram_ch"]="Telegram Kanalı"
+T_zh["telegram_ch"]="Telegram 频道"
+T_de["telegram_ch"]="Telegram-Kanal"
+T_sv["telegram_ch"]="Telegram-kanal"
+
+T_en["powered_by"]="Powered by Nebula Technology"
+T_tr["powered_by"]="Nebula Teknolojisi"
+T_zh["powered_by"]="由 Nebula 技术驱动"
+T_de["powered_by"]="Angetrieben von Nebula"
+T_sv["powered_by"]="Drivs av Nebula"
+
 t() {
-  local key="$1"
-  local var="T_${LANG:-en}[$key]"
-  local val="${!var:-}"
+  local key="$1"; local var="T_${LANG:-en}[$key]"; local val="${!var:-}"
   [ -z "$val" ] && { var="T_en[$key]"; val="${!var:-$key}"; }
   printf '%s' "$val"
 }
@@ -620,13 +634,43 @@ spin_planet() {  # $1 row $2 col $3 label ; runs cmd in $4..
   move_to "$row" "$col"; fg 56 189 140; printf '✓ '; fg 148 163 184; printf ' %s      ' "$label"; reset_all
 }
 
-# ---- static header (light, no lag) -------------------------
+# ---- spinning earth / tech globe ---------------------------
+# A rotating globe made of ASCII frames, tinted with the gradient.
+# Symbolizes internet · telegram · git · technology.
+EARTH_FRAMES=(
+'    .-""""-.    
+   /  🌐   \\   
+  |  ≋≋≋≋≋  |  
+  |  ≋≋≋≋≋  |  
+   \\  ≋≋≋  /   
+    `-....-`    '
+'    .-""""-.    
+   /  ≋🌐≋  \\   
+  |  ≋≋≋≋≋  |  
+  |  ≋≋≋≋≋  |  
+   \\  ≋≋≋  /   
+    `-....-`    '
+)
+
+# Simpler single-line rotating globe for the footer (light, no lag).
+GLOBE_SPIN=('🌍' '🌎' '🌏')
+draw_footer_globe() {  # $1 phase
+  local ph=$1 W H; W=$(term_w); H=$(term_h)
+  local g="${GLOBE_SPIN[$(( ph % 3 ))]}"
+  # footer content: globe + tech icons + telegram link
+  local line="${g}  ◈ Internet  ·  🤖 Telegram  ·  ⑂ Git  ·  ⚡ Tech   →  t.me/NebulaAiHQ"
+  local col=$(( (W - 62) / 2 )); [ "$col" -lt 1 ] && col=1
+  move_to "$(( H-1 ))" "$col"
+  fg 100 150 220; printf '%s' "$line"; reset_all
+}
+
+# ---- static header + footer (light) ------------------------
 MENU_TOP=0
+GLOBE_PHASE=0
 draw_header() {
   clear_scr
   local W; W=$(term_w)
-  if [ "$W" -lt 54 ]; then W=54; fi
-  # light starfield only if terminal is big enough
+  [ "$W" -lt 54 ] && W=54
   [ "$(term_h)" -ge 20 ] && draw_stars_fast
   local col=$(( (W - LOGO_W) / 2 )); [ "$col" -lt 1 ] && col=1
   paint_logo 2 "$col" 0
@@ -640,6 +684,9 @@ draw_header() {
   for (( i=0; i<LOGO_W; i++ )); do grad_color $(( i*100/LOGO_W )); printf '─'; done
   reset_all
   MENU_TOP=$(( drow + 2 ))
+  # footer globe + telegram (rotates a bit each redraw)
+  GLOBE_PHASE=$(( (GLOBE_PHASE + 1) % 3 ))
+  draw_footer_globe "$GLOBE_PHASE"
 }
 
 draw_stats() {
@@ -653,68 +700,42 @@ draw_stats() {
   move_to "$row" "$col"; dim; fg 100 116 139; printf '%s' "$info"; reset_all
 }
 
-# ---- lightweight starfield (fast, no heavy loops) ----------
-draw_stars_fast() {
-  local W H n i; W=$(term_w); H=$(term_h)
-  n=$(( W * H / 60 ))   # lighter density
-  local chars=('·' '✦' '⋆' '˖' '.')
-  for (( i=0; i<n; i++ )); do
-    local r=$(( RANDOM % H + 1 )) c=$(( RANDOM % W + 1 ))
-    move_to "$r" "$c"
-    case $(( RANDOM % 3 )) in
-      0) fg 70 70 110 ;; 1) fg 100 100 150 ;; 2) fg 130 130 180 ;;
-    esac
-    printf '%s' "${chars[$(( RANDOM % 5 ))]}"
-  done
-  reset_all
-}
-
-# ---- epic splash (SAFE: fast, can't hang) ------------------
+# ---- splash (smooth gradient sweep — the good one) ---------
 epic_splash() {
-  # If the terminal is tiny or not a tty, skip animation entirely.
   clear_scr
   local W H; W=$(term_w); H=$(term_h)
-  if [ "$W" -lt 54 ] || [ "$H" -lt 16 ]; then return; fi
+  [ "$W" -lt 54 ] || [ "$H" -lt 16 ] && return
 
   local col=$(( (W - LOGO_W) / 2 )); [ "$col" -lt 1 ] && col=1
-  local top=$(( (H - LOGO_H) / 2 - 2 )); [ "$top" -lt 1 ] && top=1
+  local top=$(( (H - LOGO_H) / 2 - 3 )); [ "$top" -lt 1 ] && top=1
 
-  # starfield backdrop (single fast pass)
+  # light starfield backdrop
   draw_stars_fast
 
-  # one shooting star (backgrounded, won't block)
-  ( shooting_star ) 2>/dev/null &
-  local ss=$!
-
-  # logo gradient sweep (short)
+  # smooth multi-pass gradient sweep across the logo (the nice effect)
   local s
-  for s in 0 20 40 60 40 20 0; do
+  for s in 0 8 16 24 32 40 48 56 64 72 80 72 64 56 48 40 32 24 16 8 0; do
     paint_logo "$top" "$col" "$s"
-    sleep 0.03
+    sleep 0.035
   done
-  wait "$ss" 2>/dev/null || true
 
-  # tagline typewriter (fast)
+  # tagline typewriter
   local tag="N E B U L A   A I   P L A T F O R M"
   local tcol=$(( (W - ${#tag}) / 2 )); [ "$tcol" -lt 1 ] && tcol=1
-  typewriter "$(( top + LOGO_H + 1 ))" "$tcol" "$tag" 148 163 184 0.010
+  typewriter "$(( top + LOGO_H + 1 ))" "$tcol" "$tag" 148 163 184 0.012
 
   # subtitle
   local sub="✦  Powerful Bot & Panel Platform  ✦"
   local scol=$(( (W - ${#sub}) / 2 )); [ "$scol" -lt 1 ] && scol=1
   move_to "$(( top + LOGO_H + 3 ))" "$scol"; dim; fg 120 130 160; printf '%s' "$sub"; reset_all
-  sleep 0.5
-}
 
-# ---- glow pulse for selected button (light) ----------------
-pulse_selected() {  # $1 row $2 col $3 text
-  local row=$1 col=$2 text=$3
-  # single-frame highlight (no loop → zero lag)
-  move_to "$row" "$col"
-  grad_color 30; printf '▸ '
-  bg 70 62 140; fg 255 255 255; bold
-  printf ' %-44s ' "$text"
-  reset_all
+  # spinning globe intro at the bottom
+  local ph
+  for ph in 0 1 2 0 1 2; do
+    draw_footer_globe "$ph"
+    sleep 0.12
+  done
+  sleep 0.3
 }
 
 # ---- bottom status bar -------------------------------------
@@ -741,6 +762,17 @@ read_key() {
 }
 
 MENU_PREV=-1
+
+# ---- glow highlight for selected button (single-frame) -----
+pulse_selected() {  # $1 row $2 col $3 text
+  local row=$1 col=$2 text=$3
+  move_to "$row" "$col"
+  grad_color 30; printf '▸ '
+  bg 70 62 140; fg 255 255 255; bold
+  printf ' %-44s ' "$text"
+  reset_all
+}
+
 draw_menu() {
   local W; W=$(term_w)
   local n=${#MENU_ITEMS[@]}
@@ -1345,5 +1377,5 @@ do_uninstall() {
 }
 
 
-# ---- run ---------------------------------------------------
+# ---- run ---
 main "$@"
