@@ -23,6 +23,7 @@ ENV_FILE="$APP_DIR/.env"
 BIN_PATH="/usr/local/bin/nebula"
 DEFAULT_PORT=3000
 LANG="en"
+LANG_FILE="/opt/nebula/.lang"   # remembers the user's language choice
 STTY_SAVE=""
 # Where to read keystrokes from: prefer the real terminal.
 if [ -r /dev/tty ]; then KEY_SRC=/dev/tty; else KEY_SRC=/dev/stdin; fi
@@ -78,7 +79,7 @@ grad_color() {
 }
 # shifted gradient for animation (offset 0..100 rotates the palette)
 grad_color_shift() { local p=$(( ($1 + ${2:-0}) % 100 )); grad_color "$p"; }
-# ---- translations (6 languages, Persian as Finglish) ---------
+# ---- translations (6 languages) ---------
 declare -A T_en T_tr T_zh T_de T_sv T_fa
 
 T_en["choose_lang"]="Choose your language"
@@ -444,6 +445,13 @@ T_zh["signature"]="⑂ 由 Nebula AI 团队开发"
 T_de["signature"]="⑂ Entwickelt vom Nebula AI Team"
 T_sv["signature"]="⑂ Utvecklad av Nebula AI-teamet"
 T_fa["signature"]="Tose-e yafte tavassot-e Team-e Nebula AI"
+
+T_en["menu_language"]="Change Language"
+T_tr["menu_language"]="Dili Değiştir"
+T_zh["menu_language"]="更改语言"
+T_de["menu_language"]="Sprache ändern"
+T_sv["menu_language"]="Byt språk"
+T_fa["menu_language"]="Taghir-e Zaban"
 
 t() {
   local key="$1"; local var="T_${LANG:-en}[$key]"; local val="${!var:-}"
@@ -1403,10 +1411,22 @@ do_uninstall() {
     info_screen "$(t menu_uninstall)" "✓  $(t removed)"
   fi
 }
+# Load a previously-saved language (if any). Returns 0 if found.
+load_lang() {
+  [ -f "$LANG_FILE" ] || return 1
+  local saved; saved="$(cat "$LANG_FILE" 2>/dev/null)"
+  case "$saved" in en|tr|zh|de|sv|fa) LANG="$saved"; return 0 ;; *) return 1 ;; esac
+}
+save_lang() {
+  mkdir -p "$(dirname "$LANG_FILE")" 2>/dev/null || true
+  printf '%s' "$LANG" > "$LANG_FILE" 2>/dev/null || true
+}
+
 pick_language() {
   MENU_TITLE="Choose your language"
   run_menu "English" "Türkçe" "中文 (Chinese)" "Deutsch" "Svenska" "Farsi" || { clear_scr; return 1; }
   case "$MENU_RESULT" in 0) LANG="en";;1) LANG="tr";;2) LANG="zh";;3) LANG="de";;4) LANG="sv";;5) LANG="fa";;*) LANG="en";; esac
+  save_lang
 }
 main_menu() {
   while true; do
@@ -1414,11 +1434,13 @@ main_menu() {
     run_menu \
       "🚀   $(t menu_install)" "⬆️    $(t menu_update)" "🔒   $(t menu_ssl)" \
       "📊   $(t menu_status)" "📜   $(t menu_logs)" "🔑   $(t menu_password)" \
-      "🔄   $(t menu_restart)" "🗑    $(t menu_uninstall)" "❌   $(t menu_exit)" \
+      "🔄   $(t menu_restart)" "🗑    $(t menu_uninstall)" "🌐   $(t menu_language)" \
+      "❌   $(t menu_exit)" \
       || { goodbye_screen; return; }
     case "$MENU_RESULT" in
       0) do_install;;1) do_update;;2) do_ssl;;3) do_status;;4) do_logs;;
-      5) do_password;;6) do_restart;;7) do_uninstall;;8) goodbye_screen; return;;
+      5) do_password;;6) do_restart;;7) do_uninstall;;
+      8) pick_language;;9) goodbye_screen; return;;
     esac
   done
 }
@@ -1442,7 +1464,11 @@ main() {
   stty -echo 2>/dev/null || true
   alt_screen; hide_cursor; disable_mouse
   epic_splash
-  pick_language || { cleanup; return 0; }
+  # Only ask for language on first run. If a choice was saved before, use it
+  # and go straight to the menu — no language screen the second time.
+  if ! load_lang; then
+    pick_language || { cleanup; return 0; }
+  fi
   main_menu
   # falling out of the menu returns us here; cleanup (via trap) restores
   # the user's terminal and we exit the script normally — the SSH session
