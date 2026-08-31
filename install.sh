@@ -252,28 +252,49 @@ case "${1:-}" in
   ssl)
       DOMAIN="${2:-}"
       if [ -z "$DOMAIN" ]; then
-        echo "Usage: nebula ssl <your-domain>"
-        echo "Example: nebula ssl panel.example.com"
+        echo "Usage:"
+        echo "  nebula ssl <your-domain>   HTTPS for a domain you own"
+        echo "  nebula ssl auto            HTTPS on this server's IP (no domain needed)"
+        echo ""
+        echo "Examples:"
+        echo "  nebula ssl panel.example.com"
+        echo "  nebula ssl auto"
         exit 1
       fi
       if [ "$(id -u)" -ne 0 ]; then echo "Please run as root: sudo nebula ssl $DOMAIN"; exit 1; fi
 
+      MYIP=$(curl -fsS --max-time 5 https://api.ipify.org 2>/dev/null || true)
+
+      # "auto" → build a free hostname from the IP via sslip.io. It resolves
+      # to this exact IP automatically, so Let's Encrypt can issue on it with
+      # no domain purchase. Address looks like 62-238-113-252.sslip.io.
+      if [ "$DOMAIN" = "auto" ]; then
+        if [ -z "$MYIP" ]; then echo "Could not detect this server's public IP."; exit 1; fi
+        DOMAIN="$(echo "$MYIP" | tr '.' '-').sslip.io"
+        echo "▶ No domain given — using a free auto-hostname: $DOMAIN"
+      fi
+
       echo "▶ Setting up HTTPS for: $DOMAIN"
 
-      # 1) Check the domain points at THIS server (best-effort DNS check).
-      MYIP=$(curl -fsS --max-time 5 https://api.ipify.org 2>/dev/null || true)
-      DIP=$(getent hosts "$DOMAIN" | awk '{print $1}' | head -1 || true)
-      if [ -n "$MYIP" ] && [ -n "$DIP" ] && [ "$MYIP" != "$DIP" ]; then
-        echo ""
-        echo "  ⚠️  DNS doesn't point here yet."
-        echo "     $DOMAIN → ${DIP:-nothing}"
-        echo "     This server → $MYIP"
-        echo ""
-        echo "  Create an A record first:"
-        echo "     Type: A   Name: $DOMAIN   Value: $MYIP"
-        echo "  Then wait a few minutes and run this again."
-        exit 1
-      fi
+      # 1) Check the domain points at THIS server (skip for sslip.io — it
+      #    always resolves to the embedded IP by design).
+      case "$DOMAIN" in
+        *.sslip.io) : ;;  # trusted to resolve to our IP
+        *)
+          DIP=$(getent hosts "$DOMAIN" | awk '{print $1}' | head -1 || true)
+          if [ -n "$MYIP" ] && [ -n "$DIP" ] && [ "$MYIP" != "$DIP" ]; then
+            echo ""
+            echo "  ⚠️  DNS doesn't point here yet."
+            echo "     $DOMAIN → ${DIP:-nothing}"
+            echo "     This server → $MYIP"
+            echo ""
+            echo "  Create an A record first:"
+            echo "     Type: A   Name: $DOMAIN   Value: $MYIP   (Proxy OFF / DNS only)"
+            echo "  Then wait a few minutes and run this again."
+            exit 1
+          fi
+          ;;
+      esac
 
       # 2) Install nginx + certbot.
       echo "  Installing nginx + certbot..."
@@ -342,6 +363,7 @@ NGINX
       echo "  nebula version      Show installed version"
       echo "  nebula password     Show the panel password"
       echo "  nebula ssl <domain> Set up free HTTPS for a domain"
+      echo "  nebula ssl auto     Set up free HTTPS on this IP (no domain)"
       echo "  nebula uninstall    Remove everything" ;;
 esac
 EOF
@@ -386,8 +408,8 @@ summary() {
 
   if [ -z "${PANEL_DOMAIN:-}" ]; then
     printf "  ${B}Enable HTTPS${R} (optional)\n"
-    printf "    Point a domain at this server, then run:\n"
-    printf "    ${PURP}nebula ssl your-domain.com${R}\n\n"
+    printf "    With a domain:   ${PURP}nebula ssl your-domain.com${R}\n"
+    printf "    Without one:     ${PURP}nebula ssl auto${R}   ${GREY}(free, uses this IP)${R}\n\n"
   fi
 }
 
