@@ -6,7 +6,7 @@
   <img alt="Version" src="https://img.shields.io/badge/version-1.0-8b5cf6?style=for-the-badge">
   <img alt="Ubuntu" src="https://img.shields.io/badge/Ubuntu-22·24·26-6366f1?style=for-the-badge&logo=ubuntu&logoColor=white">
   <img alt="Docker" src="https://img.shields.io/badge/Docker-ready-38bdf8?style=for-the-badge&logo=docker&logoColor=white">
-  <img alt="License" src="https://img.shields.io/badge/license-Pro-a855f7?style=for-the-badge">
+  <img alt="Price" src="https://img.shields.io/badge/Pro-$5_lifetime-a855f7?style=for-the-badge">
 </p>
 <p><a href="https://t.me/NebulaAiHQ"><img alt="Telegram" src="https://img.shields.io/badge/Telegram-@NebulaAiHQ-229ED9?style=for-the-badge&logo=telegram&logoColor=white"></a></p>
 <h3>The complete, self-hosted Telegram bot & management platform — installed in one line.</h3>
@@ -55,6 +55,19 @@ Navigate with **arrow keys** (or number keys / `j`,`k` on mobile & Termux).
 
 ---
 
+## 💎 Pricing & License
+
+Nebula AI Platform is **freemium**:
+
+- 🆓 **Free forever:** the core sections — **Dashboard, Users, Groups** — work without any license.
+- 💎 **Pro (lifetime):** unlock everything else — Servers & VPN panels, Subscriptions, Follow-guard, Submissions, Broadcasts, Agents, Transactions, Transfers, Referrals, Backup, and License management.
+
+**One-time payment of just $5** to [@NebulaAi_HQ_bot](https://t.me/NebulaAi_HQ_bot) gives you a **lifetime** Pro license — pay once, use forever. The license is bound to your bot, travels with your backups, and never expires.
+
+**How to buy:** open [@NebulaAi_HQ_bot](https://t.me/NebulaAi_HQ_bot), send your bot ID (shown in your panel under "My License"), pay $5 in crypto, and receive your key instantly. Paste it into your panel — done.
+
+---
+
 ## 🐳 Manual / Docker Install
 
 Prefer to do it by hand, or already have Docker? The platform ships as a pre-built image on Docker Hub: **`weblinuxi/nebula-platform`**.
@@ -67,12 +80,9 @@ services:
     image: weblinuxi/nebula-platform:latest
     container_name: nebula
     restart: unless-stopped
-    env_file:
-      - .env
-    ports:
-      - "3000:3000"
-    volumes:
-      - nebula-data:/app/data
+    env_file: [ .env ]
+    ports: [ "3000:3000" ]
+    volumes: [ nebula-data:/app/data ]
 volumes:
   nebula-data:
     name: nebula-data
@@ -89,7 +99,6 @@ PORT=3000
 DB_PATH=/app/data/bot.db
 SECURE_COOKIES=false
 BOT_TOKEN=
-BOT_USERNAME=
 ```
 
 ```bash
@@ -105,13 +114,10 @@ After installation, the `nebula` command is available on the server:
 | Command | What it does |
 |---|---|
 | `nebula` | Open the graphical management menu |
-| `nebula start` | Start the platform |
-| `nebula stop` | Stop it |
-| `nebula restart` | Restart it |
-| `nebula status` | Service status, version, panel URL (+ HTTPS if set) |
+| `nebula start` / `stop` / `restart` | Start / stop / restart |
+| `nebula status` | Service status, version, panel URL (+ HTTPS) |
 | `nebula logs` | Follow live logs |
-| `nebula update` | Update to the newest version (data kept) |
-| `nebula version` | Show installed version |
+| `nebula update` | Update to newest version (data kept) |
 | `nebula password` | Show the panel password |
 | `nebula ssl <domain>` | Free HTTPS for a domain |
 | `nebula ssl auto` | Free HTTPS on the server IP (no domain) |
@@ -146,7 +152,7 @@ Both install Nginx + Certbot, issue the certificate, enable secure cookies, and 
 ✅ One-line install on Ubuntu 22 / 24 / 26  
 ✅ Graphical animated TUI — starfield, gradient logo, progress bars  
 ✅ 6-language installer with saved preference  
-✅ Arrow-key **and** number-key navigation (mobile / Termux friendly)  
+✅ Arrow-key and number-key navigation (mobile / Termux friendly)  
 ✅ Docker-based — sealed, compiled image; source stays private  
 ✅ Free SSL for a domain or a bare IP  
 ✅ One-command updates and backups  
@@ -184,10 +190,10 @@ Both install Nginx + Certbot, issue the certificate, enable secure cookies, and 
 
 ### Security & Licensing
 
-✅ **Ed25519-signed licenses** — industry-standard asymmetric crypto  
-✅ Licenses bound to a specific **bot ID** (anti-sharing)  
+✅ Ed25519-signed licenses — industry-standard asymmetric crypto  
+✅ Licenses bound to a specific bot ID (anti-sharing)  
 ✅ Key issuing only on the vendor master server  
-✅ Signed keys **cannot be forged** on customer installs  
+✅ Signed keys cannot be forged on customer installs  
 ✅ Per-buyer key delivery (paid orders or manual by Telegram ID)  
 
 ---
