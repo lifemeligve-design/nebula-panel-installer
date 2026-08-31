@@ -6,7 +6,7 @@
   <img alt="Version" src="https://img.shields.io/badge/version-1.0-8b5cf6?style=for-the-badge">
   <img alt="Ubuntu" src="https://img.shields.io/badge/Ubuntu-22·24·26-6366f1?style=for-the-badge&logo=ubuntu&logoColor=white">
   <img alt="Docker" src="https://img.shields.io/badge/Docker-ready-38bdf8?style=for-the-badge&logo=docker&logoColor=white">
-  <img alt="License" src="https://img.shields.io/badge/license-Pro-a855f7?style=for-the-badge">
+  <img alt="Price" src="https://img.shields.io/badge/Pro-$5_lifetime-a855f7?style=for-the-badge">
 </p>
 <p><a href="https://t.me/NebulaAiHQ"><img alt="Telegram" src="https://img.shields.io/badge/Telegram-@NebulaAiHQ-229ED9?style=for-the-badge&logo=telegram&logoColor=white"></a></p>
 <h3>پلتفرم کامل و سلف‌هاست ربات تلگرام و مدیریت — نصب با یک خط دستور.</h3>
@@ -55,6 +55,19 @@ bash <(curl -Ls https://nebulapanel.cloud/install)
 
 ---
 
+## 💎 قیمت و لایسنس
+
+Nebula AI Platform به‌صورت **فریمیوم** است:
+
+- 🆓 **همیشه رایگان:** بخش‌های اصلی — **داشبورد، کاربران، گروه‌ها** — بدون هیچ لایسنسی کار می‌کنند.
+- 💎 **پرو (مادام‌العمر):** باز کردن بقیه — سرورها و پنل‌های VPN، اشتراک‌ها، رصد آنفالو، تأییدات، پیام همگانی، نمایندگی‌ها، تراکنش‌ها، انتقال‌ها، دعوت‌ها، پشتیبان‌گیری و مدیریت لایسنس.
+
+با **پرداخت یک‌باره فقط ۵ دلار** به [@NebulaAi_HQ_bot](https://t.me/NebulaAi_HQ_bot) یک لایسنس پرو **مادام‌العمر** می‌گیرید — یک‌بار بپرداز، همیشه استفاده کن. لایسنس به ربات شما گره می‌خورد، با پشتیبان‌هایتان منتقل می‌شود و هیچ‌وقت منقضی نمی‌شود.
+
+**نحوه خرید:** [@NebulaAi_HQ_bot](https://t.me/NebulaAi_HQ_bot) را باز کنید، آیدی ربات خود را بفرستید (در پنل، بخش «لایسنس من» نمایش داده می‌شود)، ۵ دلار کریپتو بپردازید و کلید را فوری دریافت کنید. آن را در پنل خود پیست کنید — تمام.
+
+---
+
 ## 🐳 نصب دستی / داکر
 
 ترجیح می‌دهید دستی انجام دهید یا از قبل داکر دارید؟ پلتفرم به‌صورت یک ایمیج آماده روی Docker Hub منتشر شده: **`weblinuxi/nebula-platform`**.
@@ -67,12 +80,9 @@ services:
     image: weblinuxi/nebula-platform:latest
     container_name: nebula
     restart: unless-stopped
-    env_file:
-      - .env
-    ports:
-      - "3000:3000"
-    volumes:
-      - nebula-data:/app/data
+    env_file: [ .env ]
+    ports: [ "3000:3000" ]
+    volumes: [ nebula-data:/app/data ]
 volumes:
   nebula-data:
     name: nebula-data
@@ -89,7 +99,6 @@ PORT=3000
 DB_PATH=/app/data/bot.db
 SECURE_COOKIES=false
 BOT_TOKEN=
-BOT_USERNAME=
 ```
 
 ```bash
@@ -105,13 +114,10 @@ docker compose up -d
 | Command | What it does |
 |---|---|
 | `nebula` | Open the graphical management menu |
-| `nebula start` | Start the platform |
-| `nebula stop` | Stop it |
-| `nebula restart` | Restart it |
-| `nebula status` | Service status, version, panel URL (+ HTTPS if set) |
+| `nebula start` / `stop` / `restart` | Start / stop / restart |
+| `nebula status` | Service status, version, panel URL (+ HTTPS) |
 | `nebula logs` | Follow live logs |
-| `nebula update` | Update to the newest version (data kept) |
-| `nebula version` | Show installed version |
+| `nebula update` | Update to newest version (data kept) |
 | `nebula password` | Show the panel password |
 | `nebula ssl <domain>` | Free HTTPS for a domain |
 | `nebula ssl auto` | Free HTTPS on the server IP (no domain) |
@@ -143,52 +149,52 @@ nebula ssl auto
 
 ### نصب و عملیات
 
-✅ One-line install on Ubuntu 22 / 24 / 26  
-✅ Graphical animated TUI — starfield, gradient logo, progress bars  
-✅ 6-language installer with saved preference  
-✅ Arrow-key **and** number-key navigation (mobile / Termux friendly)  
-✅ Docker-based — sealed, compiled image; source stays private  
-✅ Free SSL for a domain or a bare IP  
-✅ One-command updates and backups  
-✅ Built-in `nebula` management CLI  
+✅ نصب تک‌خطی روی اوبونتو ۲۲ / ۲۴ / ۲۶  
+✅ محیط گرافیکی متحرک — کهکشان، لوگوی گرادیانتی، نوار پیشرفت  
+✅ نصب‌کننده ۶ زبانه با ذخیره‌ی زبان انتخابی  
+✅ حرکت با کلید جهت‌دار و کلید عدد (مناسب موبایل / ترمکس)  
+✅ مبتنی بر داکر — ایمیج دربسته و کامپایل‌شده؛ کد منبع محفوظ می‌ماند  
+✅ SSL رایگان برای دامنه یا حتی IP خام  
+✅ به‌روزرسانی و پشتیبان‌گیری با یک دستور  
+✅ دستور مدیریت `nebula` داخلی  
 
 ### پنل مدیریت
 
-✅ Modern, responsive dashboard with live server stats  
-✅ 7-language UI (fa · en · ar · tr · zh · de · sv) with full RTL  
-✅ Users — balances, history, profiles, avatars  
-✅ Tasks & rewards — configurable gigabyte rewards  
-✅ Referrals — invite tracking, leaderboards, bonus tiers  
-✅ Transactions & transfers — full ledger  
-✅ Groups — auto-responses, schedules, stats, locks  
-✅ Follow-guard — reclaim rewards / cut subs when users leave a channel  
-✅ Subscriptions & VPN panels — server & config management  
-✅ Support — in-panel live chat with users  
-✅ Submissions — screenshot anti-fraud approvals  
-✅ Broadcasts — message all users with live progress  
-✅ Emergency notifier — reach users through any bot token  
-✅ Anti-bot — blocks promo-bot button spam (even channel-posted ads)  
-✅ Agents — limited sub-admins with per-section permissions  
-✅ Backups — scheduled, with restore & channel delivery  
-✅ Settings — bot control, maintenance mode, messages, password  
+✅ داشبورد مدرن و واکنش‌گرا با آمار زنده‌ی سرور  
+✅ رابط ۷ زبانه (fa · en · ar · tr · zh · de · sv) با پشتیبانی کامل RTL  
+✅ کاربران — موجودی، تاریخچه، پروفایل، آواتار  
+✅ مأموریت‌ها و پاداش‌ها — پاداش گیگابایتی قابل‌تنظیم  
+✅ دعوت‌ها — رهگیری دعوت، جدول برترین‌ها، سطوح پاداش  
+✅ تراکنش‌ها و انتقال‌ها — دفتر کل کامل  
+✅ گروه‌ها — پاسخ خودکار، زمان‌بندی، آمار، قفل‌ها  
+✅ رصد آنفالو — پس‌گرفتن پاداش / قطع اشتراک وقتی کاربر کانال را ترک می‌کند  
+✅ اشتراک‌ها و پنل‌های VPN — مدیریت سرور و کانفیگ  
+✅ پشتیبانی — چت زنده با کاربران داخل پنل  
+✅ تأییدات — ضدتقلب اسکرین‌شات  
+✅ پیام همگانی — ارسال به همه کاربران با پیشرفت زنده  
+✅ اطلاع‌رسان اضطراری — دسترسی به کاربران از طریق هر توکن ربات  
+✅ ضد ربات — مسدودسازی اسپم دکمه‌ای ربات‌های تبلیغاتی (حتی تبلیغ کانالی)  
+✅ نمایندگی‌ها — زیرمدیران محدود با دسترسی هر بخش  
+✅ پشتیبان‌گیری — زمان‌بندی‌شده، با بازیابی و ارسال به کانال  
+✅ تنظیمات — کنترل ربات، حالت تعمیرات، پیام‌ها، رمز عبور  
 
 ### ربات تلگرام
 
-✅ Gigabyte wallet system  
-✅ Missions / tasks with real verification (channel membership, etc.)  
-✅ Referral codes & rewards  
-✅ Crypto checkout & withdrawals  
-✅ Required-channel gating  
-✅ In-bot license purchase flow  
-✅ Group management via `/panel` (anti-spam, anti-bot, locks)  
+✅ سیستم کیف پول گیگابایتی  
+✅ مأموریت‌ها با تأیید واقعی (عضویت در کانال و غیره)  
+✅ کدهای دعوت و پاداش  
+✅ پرداخت و برداشت کریپتو  
+✅ اجبار عضویت در کانال  
+✅ فرایند خرید لایسنس داخل ربات  
+✅ مدیریت گروه از طریق `/panel` (ضد اسپم، ضد ربات، قفل‌ها)  
 
 ### امنیت و لایسنس
 
-✅ **Ed25519-signed licenses** — industry-standard asymmetric crypto  
-✅ Licenses bound to a specific **bot ID** (anti-sharing)  
-✅ Key issuing only on the vendor master server  
-✅ Signed keys **cannot be forged** on customer installs  
-✅ Per-buyer key delivery (paid orders or manual by Telegram ID)  
+✅ لایسنس‌های امضاشده با Ed25519 — رمزنگاری نامتقارن استاندارد صنعت  
+✅ لایسنس گره‌خورده به آیدی ربات مشخص (ضداشتراک)  
+✅ صدور کلید فقط روی سرور اصلی فروشنده  
+✅ کلیدهای امضاشده روی نصب مشتری قابل جعل نیستند  
+✅ تحویل کلید به هر خریدار (سفارش پرداختی یا دستی با آیدی تلگرام)  
 
 ---
 
