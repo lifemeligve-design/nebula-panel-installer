@@ -28,12 +28,25 @@ LANG="en"
 ESC=$'\033'
 hide_cursor(){ printf '%s[?25l' "$ESC"; }
 show_cursor(){ printf '%s[?25h' "$ESC"; }
+disable_mouse(){ printf '%s[?1000l%s[?1002l%s[?1003l%s[?1006l' "$ESC" "$ESC" "$ESC" "$ESC"; }
+flush_input(){ local junk; while read -r -t 0.01 -n 64 junk </dev/tty 2>/dev/null; do :; done; }
+# Wait ONLY for the Enter key. Ignores stray mouse-scroll bytes and other
+# keys, so a page never dismisses itself from an accidental scroll/move.
+wait_enter(){
+  flush_input
+  local key
+  while true; do
+    IFS= read -rsn1 key </dev/tty 2>/dev/null || return
+    # Enter arrives as empty string (newline stripped by read -n1)
+    [ -z "$key" ] && return
+  done
+}
 clear_scr(){ printf '%s[2J%s[H' "$ESC" "$ESC"; }
 alt_screen(){ printf '%s[?1049h' "$ESC"; }   # enter alternate buffer
 main_screen(){ printf '%s[?1049l' "$ESC"; }  # restore user's screen
 move_to(){ printf '%s[%d;%dH' "$ESC" "$1" "$2"; }
 reset_all(){ printf '%s[0m' "$ESC"; }
-cleanup(){ show_cursor; reset_all; main_screen 2>/dev/null || true; printf '\n'; }
+cleanup(){ show_cursor; disable_mouse 2>/dev/null; reset_all; main_screen 2>/dev/null || true; printf '\n'; }
 trap cleanup EXIT INT TERM
 
 fg(){ printf '%s[38;2;%d;%d;%dm' "$ESC" "$1" "$2" "$3"; }
@@ -828,10 +841,17 @@ read_key() {
   local k rest
   IFS= read -rsn1 k </dev/tty || true
   if [ "$k" = "$ESC" ]; then
-    read -rsn2 -t 0.001 rest </dev/tty || true
-    case "$rest" in '[A') echo up ;; '[B') echo down ;; '[C') echo right ;; '[D') echo left ;; *) echo esc ;; esac
+    read -rsn2 -t 0.002 rest </dev/tty || true
+    case "$rest" in
+      '[A') echo up ;; '[B') echo down ;; '[C') echo right ;; '[D') echo left ;;
+      '[M'|'[<')
+        # mouse event — swallow the trailing bytes and ignore it entirely
+        read -rsn3 -t 0.002 _ </dev/tty 2>/dev/null || true
+        echo none ;;
+      *) echo none ;;
+    esac
   elif [ -z "$k" ]; then echo enter
-  else case "$k" in q|Q) echo quit ;; *) echo other ;; esac
+  else case "$k" in q|Q) echo quit ;; *) echo none ;; esac
   fi
 }
 
@@ -878,6 +898,7 @@ run_menu() {
       down)  MENU_SEL=$(( (MENU_SEL+1)%n )); draw_menu ;;
       enter) MENU_RESULT=$MENU_SEL; return 0 ;;
       quit|esc) MENU_RESULT=-1; return 1 ;;
+      none) : ;;   # ignore mouse/scroll/unknown — don't redraw, don't act
     esac
   done
 }
@@ -919,7 +940,7 @@ success_card() {  # passes lines as args
     i=$(( i+1 ))
   done
   draw_statusbar "    $(t press_enter)"
-  read -rsn1 _ </dev/tty || true
+  wait_enter
 }
 
 # ---- plain info screen -------------------------------------
@@ -933,7 +954,7 @@ info_screen() {
     move_to "$(( row+i ))" "$col"; fg 148 163 184; printf '  %s' "$line"; reset_all; i=$(( i+1 ))
   done
   draw_statusbar "    $(t press_enter)"
-  read -rsn1 _ </dev/tty || true
+  wait_enter
 }
 
 # ---- secrets & helpers -------------------------------------
@@ -1312,7 +1333,7 @@ goodbye_screen() {
   sleep 0.6
 }
 main() {
-  alt_screen; hide_cursor
+  alt_screen; hide_cursor; disable_mouse
   epic_splash
   pick_language || { cleanup; return 0; }
   main_menu
@@ -1375,7 +1396,7 @@ card_screen() {  # $1 icon+title ; $2.. body lines
     i=$(( i+1 ))
   done
   draw_statusbar "    $(t press_enter)"
-  read -rsn1 _ </dev/tty || true
+  wait_enter
 }
 
 # ---- redesigned: status ------------------------------------
@@ -1468,7 +1489,7 @@ do_logs() {
     row=$(( row+1 ))
   done < <(docker compose --project-directory "$APP_DIR" logs --tail=14 2>/dev/null || echo "-")
   draw_statusbar "    $(t press_enter)"
-  read -rsn1 _ </dev/tty || true
+  wait_enter
 }
 
 # ---- redesigned: uninstall ---------------------------------
