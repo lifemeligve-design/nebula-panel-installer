@@ -14,6 +14,12 @@
 
 set -euo pipefail
 
+# Move to a stable directory up front. If the installer is run from inside
+# a folder that gets removed mid-run (e.g. re-installing from /opt/nebula),
+# the shell's "current directory" becomes invalid and child processes emit
+# "getcwd: cannot access parent directories". Starting from / avoids that.
+cd / 2>/dev/null || true
+
 # ---- constants ---------------------------------------------
 IMAGE="weblinuxi/nebula-platform:latest"
 APP_DIR="/opt/nebula"
@@ -210,7 +216,9 @@ start_app() {
   step "Pulling application image"
   docker pull "$IMAGE" >/dev/null && ok "Image pulled"
   step "Starting Nebula"
-  ( cd "$APP_DIR" && docker compose up -d >/dev/null )
+  # Use compose's own -f/--project-directory so we never rely on the shell's
+  # current directory (which may be invalid after a re-install wipe).
+  docker compose --project-directory "$APP_DIR" -f "$COMPOSE_FILE" up -d >/dev/null
   ok "Container is up"
 }
 
