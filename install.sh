@@ -896,7 +896,7 @@ success_card() {  # passes lines as args
   local cw=54 ch=$(( $# + 4 ))
   local left=$(( (W - cw)/2 )); [ "$left" -lt 1 ] && left=1
   local top=$MENU_TOP
-  draw_card "$top" "$left" "$cw" "$ch" "✦  $(t is_live)"
+  draw_card "$top" "$left" "$cw" "$ch" "🎉  $(t is_live)"
   local i=2
   for line in "$@"; do
     move_to "$(( top+i ))" "$(( left+3 ))"; fg 200 210 230; printf '%s' "$line"; reset_all
@@ -1219,7 +1219,7 @@ do_update() {
 do_ssl() {
   if [ ! -d "$APP_DIR" ]; then info_screen "$(t menu_ssl)" "$(t not_installed)"; return; fi
   MENU_TITLE="$(t ssl_choose)"
-  run_menu "⬢  $(t ssl_domain)" "◆  $(t ssl_auto)" || return
+  run_menu "🌐  $(t ssl_domain)" "⚡  $(t ssl_auto)" || return
   local domain="auto"
   if [ "$MENU_RESULT" = "0" ]; then
     draw_header; show_cursor
@@ -1246,7 +1246,7 @@ do_logs() {
 }
 do_password() {
   local p="—"; [ -f "$ENV_FILE" ] && p=$(grep -E '^ADMIN_PASSWORD=' "$ENV_FILE" | cut -d= -f2-)
-  info_screen "⚿  $(t menu_password)" "" "$(t password):  $p"
+  info_screen "🔑  $(t menu_password)" "" "$(t password):  $p"
 }
 do_restart() {
   if [ ! -d "$APP_DIR" ]; then info_screen "$(t menu_restart)" "$(t not_installed)"; return; fi
@@ -1273,9 +1273,9 @@ main_menu() {
   while true; do
     MENU_TITLE="$(t menu_title)"
     run_menu \
-      "◆  $(t menu_install)" "↑  $(t menu_update)" "⬢  $(t menu_ssl)" \
-      "◈  $(t menu_status)" "≡  $(t menu_logs)" "⚿  $(t menu_password)" \
-      "⟳  $(t menu_restart)" "⊗  $(t menu_uninstall)" "✕  $(t menu_exit)" \
+      "🚀   $(t menu_install)" "⬆️    $(t menu_update)" "🔒   $(t menu_ssl)" \
+      "📊   $(t menu_status)" "📜   $(t menu_logs)" "🔑   $(t menu_password)" \
+      "🔄   $(t menu_restart)" "🗑    $(t menu_uninstall)" "❌   $(t menu_exit)" \
       || { goodbye_screen; return; }
     case "$MENU_RESULT" in
       0) do_install;;1) do_update;;2) do_ssl;;3) do_status;;4) do_logs;;
@@ -1376,7 +1376,7 @@ do_status() {
   local https_url=""
   [ -f "$APP_DIR/.ssl_url" ] && https_url="$(cat "$APP_DIR/.ssl_url" 2>/dev/null)"
   if [ -n "$https_url" ]; then
-    card_screen "◈  $(t menu_status)" \
+    card_screen "📊  $(t menu_status)" \
       "" \
       "◈  Service     : $state" \
       "◈  Uptime      : $up" \
@@ -1386,7 +1386,7 @@ do_status() {
       "" \
       "$(t signature)"
   else
-    card_screen "◈  $(t menu_status)" \
+    card_screen "📊  $(t menu_status)" \
       "" \
       "◈  Service     : $state" \
       "◈  Uptime      : $up" \
@@ -1404,7 +1404,7 @@ do_password() {
     p=$(grep -E '^ADMIN_PASSWORD=' "$ENV_FILE" | cut -d= -f2-)
     u=$(grep -E '^ADMIN_USERNAME=' "$ENV_FILE" | cut -d= -f2-)
   fi
-  card_screen "⚿  $(t menu_password)" \
+  card_screen "🔑  $(t menu_password)" \
     "" \
     "◈  $(t username):  $u" \
     "◈  $(t password):  $p" \
@@ -1413,17 +1413,17 @@ do_password() {
 
 # ---- redesigned: restart -----------------------------------
 do_restart() {
-  if [ ! -d "$APP_DIR" ]; then card_screen "⟳  $(t menu_restart)" "" "✗  $(t not_installed)" ""; return; fi
+  if [ ! -d "$APP_DIR" ]; then card_screen "🔄  $(t menu_restart)" "" "✗  $(t not_installed)" ""; return; fi
   draw_header
   local W; W=$(term_w); local col=$(( (W-50)/2 )); [ "$col" -lt 1 ] && col=1
   spin_planet "$MENU_TOP" "$col" "$(t menu_restart)..." \
     docker compose --project-directory "$APP_DIR" restart
-  card_screen "⟳  $(t menu_restart)" "" "✓  $(t restarted)" ""
+  card_screen "🔄  $(t menu_restart)" "" "✓  $(t restarted)" ""
 }
 
 # ---- redesigned: update ------------------------------------
 do_update() {
-  if [ ! -d "$APP_DIR" ]; then card_screen "↑  $(t menu_update)" "" "✗  $(t not_installed)" ""; return; fi
+  if [ ! -d "$APP_DIR" ]; then card_screen "⬆️  $(t menu_update)" "" "✗  $(t not_installed)" ""; return; fi
   draw_header
   local W; W=$(term_w); local col=$(( (W-50)/2 )); [ "$col" -lt 1 ] && col=1
   draw_progress "$MENU_TOP" "$col" 30 "$(t updating)"
@@ -1432,12 +1432,12 @@ do_update() {
   docker compose --project-directory "$APP_DIR" -f "$COMPOSE_FILE" up -d >/dev/null 2>&1
   draw_progress "$MENU_TOP" "$col" 100 "$(t updated)   "
   sleep 0.6
-  card_screen "↑  $(t menu_update)" "" "✓  $(t updated)" ""
+  card_screen "⬆️  $(t menu_update)" "" "✓  $(t updated)" ""
 }
 
 # ---- redesigned: logs (framed, live) -----------------------
 do_logs() {
-  if [ ! -d "$APP_DIR" ]; then card_screen "≡  $(t menu_logs)" "" "✗  $(t not_installed)" ""; return; fi
+  if [ ! -d "$APP_DIR" ]; then card_screen "📜  $(t menu_logs)" "" "✗  $(t not_installed)" ""; return; fi
   draw_header
   local W; W=$(term_w); local left=$(( (W-70)/2 )); [ "$left" -lt 1 ] && left=1
   move_to "$MENU_TOP" "$left"; bg 60 55 120; bold; fg 255 255 255
@@ -1457,9 +1457,9 @@ do_logs() {
 
 # ---- redesigned: uninstall ---------------------------------
 do_uninstall() {
-  if [ ! -d "$APP_DIR" ]; then card_screen "⊗  $(t menu_uninstall)" "" "✗  $(t not_installed)" ""; return; fi
+  if [ ! -d "$APP_DIR" ]; then card_screen "🗑  $(t menu_uninstall)" "" "✗  $(t not_installed)" ""; return; fi
   MENU_TITLE="⚠  $(t confirm_uninstall)"
-  run_menu "$(t menu_exit)" "⊗  $(t menu_uninstall)" || return
+  run_menu "$(t menu_exit)" "🗑  $(t menu_uninstall)" || return
   if [ "$MENU_RESULT" = "1" ]; then
     draw_header
     local W; W=$(term_w); local col=$(( (W-50)/2 )); [ "$col" -lt 1 ] && col=1
@@ -1467,7 +1467,7 @@ do_uninstall() {
       docker compose --project-directory '$APP_DIR' down -v >/dev/null 2>&1 || true
       docker rmi -f '$IMAGE' >/dev/null 2>&1 || true
       rm -rf '$APP_DIR'; rm -f '$BIN_PATH'"
-    card_screen "⊗  $(t menu_uninstall)" "" "✓  $(t removed)" ""
+    card_screen "🗑  $(t menu_uninstall)" "" "✓  $(t removed)" ""
   fi
 }
 
