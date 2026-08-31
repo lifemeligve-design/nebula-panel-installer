@@ -6,7 +6,7 @@
   <img alt="Version" src="https://img.shields.io/badge/version-1.0-8b5cf6?style=for-the-badge">
   <img alt="Ubuntu" src="https://img.shields.io/badge/Ubuntu-22·24·26-6366f1?style=for-the-badge&logo=ubuntu&logoColor=white">
   <img alt="Docker" src="https://img.shields.io/badge/Docker-ready-38bdf8?style=for-the-badge&logo=docker&logoColor=white">
-  <img alt="License" src="https://img.shields.io/badge/license-Pro-a855f7?style=for-the-badge">
+  <img alt="Price" src="https://img.shields.io/badge/Pro-$5_lifetime-a855f7?style=for-the-badge">
 </p>
 <p><a href="https://t.me/NebulaAiHQ"><img alt="Telegram" src="https://img.shields.io/badge/Telegram-@NebulaAiHQ-229ED9?style=for-the-badge&logo=telegram&logoColor=white"></a></p>
 <h3>完整的自托管 Telegram 机器人与管理平台 — 一行命令即可安装。</h3>
@@ -55,6 +55,19 @@ bash <(curl -Ls https://nebulapanel.cloud/install)
 
 ---
 
+## 💎 定价与许可
+
+Nebula AI Platform 采用**免费增值**模式：
+
+- 🆓 **永久免费：** 核心板块——**仪表板、用户、群组**——无需任何许可证即可使用。
+- 💎 **Pro（终身）：** 解锁其他所有功能——服务器与 VPN 面板、订阅、取关监控、提交、广播、代理、交易、转账、推荐、备份和许可证管理。
+
+向 [@NebulaAi_HQ_bot](https://t.me/NebulaAi_HQ_bot) **一次性支付仅 5 美元**，即可获得**终身** Pro 许可证——付一次，永久使用。许可证绑定到你的机器人，随备份迁移，永不过期。
+
+**如何购买：** 打开 [@NebulaAi_HQ_bot](https://t.me/NebulaAi_HQ_bot)，发送你的机器人 ID（在面板"我的许可证"中显示），支付 5 美元加密货币，立即收到密钥。粘贴到面板即可。
+
+---
+
 ## 🐳 手动 / Docker 安装
 
 想手动操作，或已经装了 Docker？平台以预构建镜像发布在 Docker Hub：**`weblinuxi/nebula-platform`**。
@@ -67,12 +80,9 @@ services:
     image: weblinuxi/nebula-platform:latest
     container_name: nebula
     restart: unless-stopped
-    env_file:
-      - .env
-    ports:
-      - "3000:3000"
-    volumes:
-      - nebula-data:/app/data
+    env_file: [ .env ]
+    ports: [ "3000:3000" ]
+    volumes: [ nebula-data:/app/data ]
 volumes:
   nebula-data:
     name: nebula-data
@@ -89,7 +99,6 @@ PORT=3000
 DB_PATH=/app/data/bot.db
 SECURE_COOKIES=false
 BOT_TOKEN=
-BOT_USERNAME=
 ```
 
 ```bash
@@ -105,13 +114,10 @@ docker compose up -d
 | Command | What it does |
 |---|---|
 | `nebula` | Open the graphical management menu |
-| `nebula start` | Start the platform |
-| `nebula stop` | Stop it |
-| `nebula restart` | Restart it |
-| `nebula status` | Service status, version, panel URL (+ HTTPS if set) |
+| `nebula start` / `stop` / `restart` | Start / stop / restart |
+| `nebula status` | Service status, version, panel URL (+ HTTPS) |
 | `nebula logs` | Follow live logs |
-| `nebula update` | Update to the newest version (data kept) |
-| `nebula version` | Show installed version |
+| `nebula update` | Update to newest version (data kept) |
 | `nebula password` | Show the panel password |
 | `nebula ssl <domain>` | Free HTTPS for a domain |
 | `nebula ssl auto` | Free HTTPS on the server IP (no domain) |
@@ -143,52 +149,52 @@ nebula ssl auto
 
 ### 安装与运维
 
-✅ One-line install on Ubuntu 22 / 24 / 26  
-✅ Graphical animated TUI — starfield, gradient logo, progress bars  
-✅ 6-language installer with saved preference  
-✅ Arrow-key **and** number-key navigation (mobile / Termux friendly)  
-✅ Docker-based — sealed, compiled image; source stays private  
-✅ Free SSL for a domain or a bare IP  
-✅ One-command updates and backups  
-✅ Built-in `nebula` management CLI  
+✅ 在 Ubuntu 22 / 24 / 26 上一行安装  
+✅ 图形化动画界面——星空、渐变徽标、进度条  
+✅ 6 种语言安装程序，记住偏好  
+✅ 方向键和数字键导航（适合手机 / Termux）  
+✅ 基于 Docker——密封的编译镜像；源码保持私有  
+✅ 为域名或纯 IP 提供免费 SSL  
+✅ 一条命令更新和备份  
+✅ 内置 `nebula` 管理命令  
 
 ### 管理面板
 
-✅ Modern, responsive dashboard with live server stats  
-✅ 7-language UI (fa · en · ar · tr · zh · de · sv) with full RTL  
-✅ Users — balances, history, profiles, avatars  
-✅ Tasks & rewards — configurable gigabyte rewards  
-✅ Referrals — invite tracking, leaderboards, bonus tiers  
-✅ Transactions & transfers — full ledger  
-✅ Groups — auto-responses, schedules, stats, locks  
-✅ Follow-guard — reclaim rewards / cut subs when users leave a channel  
-✅ Subscriptions & VPN panels — server & config management  
-✅ Support — in-panel live chat with users  
-✅ Submissions — screenshot anti-fraud approvals  
-✅ Broadcasts — message all users with live progress  
-✅ Emergency notifier — reach users through any bot token  
-✅ Anti-bot — blocks promo-bot button spam (even channel-posted ads)  
-✅ Agents — limited sub-admins with per-section permissions  
-✅ Backups — scheduled, with restore & channel delivery  
-✅ Settings — bot control, maintenance mode, messages, password  
+✅ 现代响应式仪表板，含实时服务器统计  
+✅ 7 语言界面 (fa · en · ar · tr · zh · de · sv)，完整 RTL 支持  
+✅ 用户——余额、历史、资料、头像  
+✅ 任务与奖励——可配置的 GB 奖励  
+✅ 推荐——邀请追踪、排行榜、奖励层级  
+✅ 交易与转账——完整账本  
+✅ 群组——自动回复、计划、统计、锁定  
+✅ 取关监控——用户离开频道时收回奖励 / 切断订阅  
+✅ 订阅与 VPN 面板——服务器与配置管理  
+✅ 支持——面板内与用户实时聊天  
+✅ 提交——截图反欺诈审批  
+✅ 广播——向所有用户发送并显示实时进度  
+✅ 紧急通知——通过任何机器人令牌联系用户  
+✅ 反机器人——拦截广告机器人按钮垃圾信息（含频道发布的广告）  
+✅ 代理——按板块权限的受限子管理员  
+✅ 备份——计划备份，支持恢复与频道投递  
+✅ 设置——机器人控制、维护模式、消息、密码  
 
 ### Telegram 机器人
 
-✅ Gigabyte wallet system  
-✅ Missions / tasks with real verification (channel membership, etc.)  
-✅ Referral codes & rewards  
-✅ Crypto checkout & withdrawals  
-✅ Required-channel gating  
-✅ In-bot license purchase flow  
-✅ Group management via `/panel` (anti-spam, anti-bot, locks)  
+✅ GB 钱包系统  
+✅ 带真实验证的任务（频道成员资格等）  
+✅ 推荐码与奖励  
+✅ 加密货币支付与提现  
+✅ 强制频道加入  
+✅ 机器人内购买许可证  
+✅ 通过 `/panel` 管理群组（反垃圾、反机器人、锁定）  
 
 ### 安全与授权
 
-✅ **Ed25519-signed licenses** — industry-standard asymmetric crypto  
-✅ Licenses bound to a specific **bot ID** (anti-sharing)  
-✅ Key issuing only on the vendor master server  
-✅ Signed keys **cannot be forged** on customer installs  
-✅ Per-buyer key delivery (paid orders or manual by Telegram ID)  
+✅ Ed25519 签名许可证——行业标准非对称加密  
+✅ 许可证绑定到特定机器人 ID（防共享）  
+✅ 仅在供应商主服务器上签发密钥  
+✅ 签名密钥无法在客户安装上伪造  
+✅ 按买家交付密钥（付费订单或按 Telegram ID 手动）  
 
 ---
 
