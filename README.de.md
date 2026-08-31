@@ -6,7 +6,7 @@
   <img alt="Version" src="https://img.shields.io/badge/version-1.0-8b5cf6?style=for-the-badge">
   <img alt="Ubuntu" src="https://img.shields.io/badge/Ubuntu-22·24·26-6366f1?style=for-the-badge&logo=ubuntu&logoColor=white">
   <img alt="Docker" src="https://img.shields.io/badge/Docker-ready-38bdf8?style=for-the-badge&logo=docker&logoColor=white">
-  <img alt="License" src="https://img.shields.io/badge/license-Pro-a855f7?style=for-the-badge">
+  <img alt="Price" src="https://img.shields.io/badge/Pro-$5_lifetime-a855f7?style=for-the-badge">
 </p>
 <p><a href="https://t.me/NebulaAiHQ"><img alt="Telegram" src="https://img.shields.io/badge/Telegram-@NebulaAiHQ-229ED9?style=for-the-badge&logo=telegram&logoColor=white"></a></p>
 <h3>Die komplette, selbst gehostete Telegram-Bot- & Verwaltungsplattform — in einer Zeile installiert.</h3>
@@ -55,6 +55,19 @@ Mit **Pfeiltasten** navigieren (oder Zifferntasten / `j`,`k` auf Mobil & Termux)
 
 ---
 
+## 💎 Preise & Lizenz
+
+Nebula AI Platform ist **Freemium**:
+
+- 🆓 **Für immer kostenlos:** die Kernbereiche — **Dashboard, Nutzer, Gruppen** — funktionieren ohne Lizenz.
+- 💎 **Pro (lebenslang):** schaltet alles andere frei — Server & VPN-Panels, Abos, Follow-Guard, Einreichungen, Rundrufe, Agenten, Transaktionen, Überweisungen, Empfehlungen, Backup und Lizenzverwaltung.
+
+Eine **einmalige Zahlung von nur 5 $** an [@NebulaAi_HQ_bot](https://t.me/NebulaAi_HQ_bot) gibt dir eine **lebenslange** Pro-Lizenz — einmal zahlen, für immer nutzen. Die Lizenz ist an deinen Bot gebunden, wandert mit deinen Backups und läuft nie ab.
+
+**So kaufst du:** öffne [@NebulaAi_HQ_bot](https://t.me/NebulaAi_HQ_bot), sende deine Bot-ID (im Panel unter "Meine Lizenz"), zahle 5 $ in Krypto und erhalte deinen Schlüssel sofort. Ins Panel einfügen — fertig.
+
+---
+
 ## 🐳 Manuelle / Docker-Installation
 
 Lieber manuell, oder Docker schon vorhanden? Die Plattform wird als vorgefertigtes Image auf Docker Hub bereitgestellt: **`weblinuxi/nebula-platform`**.
@@ -67,12 +80,9 @@ services:
     image: weblinuxi/nebula-platform:latest
     container_name: nebula
     restart: unless-stopped
-    env_file:
-      - .env
-    ports:
-      - "3000:3000"
-    volumes:
-      - nebula-data:/app/data
+    env_file: [ .env ]
+    ports: [ "3000:3000" ]
+    volumes: [ nebula-data:/app/data ]
 volumes:
   nebula-data:
     name: nebula-data
@@ -89,7 +99,6 @@ PORT=3000
 DB_PATH=/app/data/bot.db
 SECURE_COOKIES=false
 BOT_TOKEN=
-BOT_USERNAME=
 ```
 
 ```bash
@@ -105,13 +114,10 @@ Nach der Installation ist der Befehl `nebula` auf dem Server verfügbar:
 | Command | What it does |
 |---|---|
 | `nebula` | Open the graphical management menu |
-| `nebula start` | Start the platform |
-| `nebula stop` | Stop it |
-| `nebula restart` | Restart it |
-| `nebula status` | Service status, version, panel URL (+ HTTPS if set) |
+| `nebula start` / `stop` / `restart` | Start / stop / restart |
+| `nebula status` | Service status, version, panel URL (+ HTTPS) |
 | `nebula logs` | Follow live logs |
-| `nebula update` | Update to the newest version (data kept) |
-| `nebula version` | Show installed version |
+| `nebula update` | Update to newest version (data kept) |
 | `nebula password` | Show the panel password |
 | `nebula ssl <domain>` | Free HTTPS for a domain |
 | `nebula ssl auto` | Free HTTPS on the server IP (no domain) |
@@ -143,52 +149,52 @@ Beide installieren Nginx + Certbot, stellen das Zertifikat aus, aktivieren siche
 
 ### Installer & Betrieb
 
-✅ One-line install on Ubuntu 22 / 24 / 26  
-✅ Graphical animated TUI — starfield, gradient logo, progress bars  
-✅ 6-language installer with saved preference  
-✅ Arrow-key **and** number-key navigation (mobile / Termux friendly)  
-✅ Docker-based — sealed, compiled image; source stays private  
-✅ Free SSL for a domain or a bare IP  
-✅ One-command updates and backups  
-✅ Built-in `nebula` management CLI  
+✅ Ein-Zeilen-Installation auf Ubuntu 22 / 24 / 26  
+✅ Grafische animierte Oberfläche — Sternenfeld, Farbverlauf-Logo, Fortschrittsbalken  
+✅ 6-sprachiger Installer mit gespeicherter Auswahl  
+✅ Pfeiltasten- und Zifferntasten-Navigation (mobil / Termux-freundlich)  
+✅ Docker-basiert — versiegeltes, kompiliertes Image; Quellcode bleibt privat  
+✅ Kostenloses SSL für eine Domain oder eine reine IP  
+✅ Updates und Backups mit einem Befehl  
+✅ Eingebautes `nebula`-Verwaltungstool  
 
 ### Admin-Panel
 
-✅ Modern, responsive dashboard with live server stats  
-✅ 7-language UI (fa · en · ar · tr · zh · de · sv) with full RTL  
-✅ Users — balances, history, profiles, avatars  
-✅ Tasks & rewards — configurable gigabyte rewards  
-✅ Referrals — invite tracking, leaderboards, bonus tiers  
-✅ Transactions & transfers — full ledger  
-✅ Groups — auto-responses, schedules, stats, locks  
-✅ Follow-guard — reclaim rewards / cut subs when users leave a channel  
-✅ Subscriptions & VPN panels — server & config management  
-✅ Support — in-panel live chat with users  
-✅ Submissions — screenshot anti-fraud approvals  
-✅ Broadcasts — message all users with live progress  
-✅ Emergency notifier — reach users through any bot token  
-✅ Anti-bot — blocks promo-bot button spam (even channel-posted ads)  
-✅ Agents — limited sub-admins with per-section permissions  
-✅ Backups — scheduled, with restore & channel delivery  
-✅ Settings — bot control, maintenance mode, messages, password  
+✅ Modernes, responsives Dashboard mit Live-Serverstatistiken  
+✅ 7-sprachige Oberfläche (fa · en · ar · tr · zh · de · sv) mit vollem RTL  
+✅ Nutzer — Guthaben, Verlauf, Profile, Avatare  
+✅ Aufgaben & Belohnungen — konfigurierbare Gigabyte-Belohnungen  
+✅ Empfehlungen — Einladungs-Tracking, Ranglisten, Bonusstufen  
+✅ Transaktionen & Überweisungen — vollständiges Hauptbuch  
+✅ Gruppen — Auto-Antworten, Zeitpläne, Statistiken, Sperren  
+✅ Follow-Guard — Belohnung zurückholen / Abo kappen beim Verlassen eines Kanals  
+✅ Abos & VPN-Panels — Server- & Konfigurationsverwaltung  
+✅ Support — Live-Chat mit Nutzern im Panel  
+✅ Einreichungen — Screenshot-Betrugsprüfung  
+✅ Rundrufe — an alle Nutzer mit Live-Fortschritt  
+✅ Notfall-Benachrichtiger — Nutzer über einen beliebigen Bot-Token erreichen  
+✅ Anti-Bot — blockiert Werbebot-Button-Spam (auch als Kanal gepostet)  
+✅ Agenten — eingeschränkte Unter-Admins mit Rechten je Bereich  
+✅ Backups — geplant, mit Wiederherstellung & Kanal-Zustellung  
+✅ Einstellungen — Bot-Steuerung, Wartungsmodus, Nachrichten, Passwort  
 
 ### Telegram-Bot
 
-✅ Gigabyte wallet system  
-✅ Missions / tasks with real verification (channel membership, etc.)  
-✅ Referral codes & rewards  
-✅ Crypto checkout & withdrawals  
-✅ Required-channel gating  
-✅ In-bot license purchase flow  
-✅ Group management via `/panel` (anti-spam, anti-bot, locks)  
+✅ Gigabyte-Wallet-System  
+✅ Missionen mit echter Verifizierung (Kanalmitgliedschaft usw.)  
+✅ Empfehlungscodes & Belohnungen  
+✅ Krypto-Zahlung & Auszahlung  
+✅ Pflicht-Kanal-Gating  
+✅ Lizenzkauf im Bot  
+✅ Gruppenverwaltung über `/panel` (Anti-Spam, Anti-Bot, Sperren)  
 
 ### Sicherheit & Lizenzierung
 
-✅ **Ed25519-signed licenses** — industry-standard asymmetric crypto  
-✅ Licenses bound to a specific **bot ID** (anti-sharing)  
-✅ Key issuing only on the vendor master server  
-✅ Signed keys **cannot be forged** on customer installs  
-✅ Per-buyer key delivery (paid orders or manual by Telegram ID)  
+✅ Ed25519-signierte Lizenzen — asymmetrische Krypto nach Industriestandard  
+✅ Lizenzen an eine bestimmte Bot-ID gebunden (Anti-Sharing)  
+✅ Schlüsselausgabe nur auf dem Anbieter-Masterserver  
+✅ Signierte Schlüssel können auf Kundeninstallationen nicht gefälscht werden  
+✅ Schlüsselzustellung pro Käufer (bezahlte Bestellung oder manuell per Telegram-ID)  
 
 ---
 
