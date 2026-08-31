@@ -23,20 +23,22 @@ ENV_FILE="$APP_DIR/.env"
 BIN_PATH="/usr/local/bin/nebula"
 DEFAULT_PORT=3000
 LANG="en"
+# Where to read keystrokes from: prefer the real terminal.
+if [ -r /dev/tty ]; then KEY_SRC=/dev/tty; else KEY_SRC=/dev/stdin; fi
 
 # ---- terminal control --------------------------------------
 ESC=$'\033'
 hide_cursor(){ printf '%s[?25l' "$ESC"; }
 show_cursor(){ printf '%s[?25h' "$ESC"; }
 disable_mouse(){ printf '%s[?1000l%s[?1002l%s[?1003l%s[?1006l' "$ESC" "$ESC" "$ESC" "$ESC"; }
-flush_input(){ local junk; while read -r -t 0.01 -n 64 junk </dev/tty 2>/dev/null; do :; done; }
+flush_input(){ local junk; while read -r -t 0.01 -n 64 junk <"$KEY_SRC" 2>/dev/null; do :; done; }
 # Wait ONLY for the Enter key. Ignores stray mouse-scroll bytes and other
 # keys, so a page never dismisses itself from an accidental scroll/move.
 wait_enter(){
   flush_input
   local key
   while true; do
-    IFS= read -rsn1 key </dev/tty 2>/dev/null || return
+    IFS= read -rsn1 key <"$KEY_SRC" 2>/dev/null || return
     # Enter arrives as empty string (newline stripped by read -n1)
     [ -z "$key" ] && return
   done
@@ -828,7 +830,7 @@ epic_splash() {
 # ---- bottom status bar -------------------------------------
 draw_statusbar() {  # $1 = hint text
   local W H; W=$(term_w); H=$(term_h)
-  local hint="${1:-  ↑ ↓  navigate    ⏎  select    q  quit}"
+  local hint="${1:-  ↑↓ move · ⏎ select · 1-9 pick · q quit}"
   move_to "$H" 1
   bg 30 30 50; fg 148 163 184
   printf '%-*s' "$W" "  ◈ Nebula AI Platform${hint}"
@@ -838,21 +840,37 @@ draw_statusbar() {  # $1 = hint text
 # ---- arrow-key menu (with glow + status bar) ---------------
 MENU_RESULT=-1
 read_key() {
-  local k rest
-  IFS= read -rsn1 k </dev/tty || true
-  if [ "$k" = "$ESC" ]; then
-    read -rsn2 -t 0.002 rest </dev/tty || true
-    case "$rest" in
-      '[A') echo up ;; '[B') echo down ;; '[C') echo right ;; '[D') echo left ;;
-      '[M'|'[<')
-        # mouse event — swallow the trailing bytes and ignore it entirely
-        read -rsn3 -t 0.002 _ </dev/tty 2>/dev/null || true
-        echo none ;;
-      *) echo none ;;
-    esac
-  elif [ -z "$k" ]; then echo enter
-  else case "$k" in q|Q) echo quit ;; *) echo none ;; esac
-  fi
+  local k c1 c2 c3
+  IFS= read -rsn1 k <"$KEY_SRC" 2>/dev/null || { echo quit; return; }
+  case "$k" in
+    "$ESC")
+      # Read the next byte with a small timeout. A lone ESC = quit.
+      IFS= read -rsn1 -t 0.30 c1 <"$KEY_SRC" 2>/dev/null || { echo esc; return; }
+      if [ "$c1" != "[" ] && [ "$c1" != "O" ]; then echo none; return; fi
+      IFS= read -rsn1 -t 0.30 c2 <"$KEY_SRC" 2>/dev/null || { echo none; return; }
+      case "$c2" in
+        A) echo up ;;
+        B) echo down ;;
+        C) echo right ;;
+        D) echo left ;;
+        M)  # X10 mouse: 3 more bytes follow — swallow them
+            read -rsn3 -t 0.05 c3 <"$KEY_SRC" 2>/dev/null || true; echo none ;;
+        "<") # SGR mouse: read until 'M' or 'm'
+            while IFS= read -rsn1 -t 0.05 c3 <"$KEY_SRC" 2>/dev/null; do
+              case "$c3" in [Mm]) break ;; esac
+            done; echo none ;;
+        *)  # digit → likely a longer sequence (Home/End/PgUp…) — drain it
+            while IFS= read -rsn1 -t 0.02 c3 <"$KEY_SRC" 2>/dev/null; do
+              case "$c3" in [A-Za-z~]) break ;; esac
+            done; echo none ;;
+      esac ;;
+    "") echo enter ;;
+    k|K) echo up ;;
+    j|J) echo down ;;
+    q|Q|0) echo quit ;;
+    [1-9]) echo "num:$k" ;;   # number keys → direct pick (great on mobile)
+    *) echo none ;;
+  esac
 }
 
 MENU_PREV=-1
@@ -877,12 +895,16 @@ draw_menu() {
   local i
   for (( i=0; i<n; i++ )); do
     local row=$(( start + i ))
+    local num=$(( i + 1 ))
     if [ "$i" -eq "$MENU_SEL" ]; then
-      # glow pulse only on the newly-selected row (cheap, no loop lag)
-      pulse_selected "$row" "$col" "${MENU_ITEMS[$i]}"
+      move_to "$row" "$col"
+      grad_color 30; printf '▸ '
+      bg 70 62 140; fg 255 255 255; bold
+      printf ' %d. %-41s ' "$num" "${MENU_ITEMS[$i]}"
+      reset_all
     else
       move_to "$row" "$col"; printf '  '; fg 160 170 190
-      printf ' %-44s ' "${MENU_ITEMS[$i]}"; reset_all
+      printf ' %d. %-41s ' "$num" "${MENU_ITEMS[$i]}"; reset_all
     fi
   done
   draw_statusbar
@@ -893,12 +915,18 @@ run_menu() {
   local n=${#MENU_ITEMS[@]}
   hide_cursor; draw_header; draw_menu
   while true; do
-    case "$(read_key)" in
+    local kp; kp="$(read_key)"
+    case "$kp" in
       up)    MENU_SEL=$(( (MENU_SEL-1+n)%n )); draw_menu ;;
       down)  MENU_SEL=$(( (MENU_SEL+1)%n )); draw_menu ;;
       enter) MENU_RESULT=$MENU_SEL; return 0 ;;
       quit|esc) MENU_RESULT=-1; return 1 ;;
-      none) : ;;   # ignore mouse/scroll/unknown — don't redraw, don't act
+      num:*) # number pressed → pick that item directly (1-based)
+        local idx=$(( ${kp#num:} - 1 ))
+        if [ "$idx" -ge 0 ] && [ "$idx" -lt "$n" ]; then
+          MENU_SEL=$idx; MENU_RESULT=$idx; return 0
+        fi ;;
+      none) : ;;
     esac
   done
 }
