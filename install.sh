@@ -535,6 +535,22 @@ splash() {
   sleep 0.5
 }
 
+# ---- lightweight starfield (fast, no lag) ------------------
+draw_stars_fast() {
+  local W H n i; W=$(term_w); H=$(term_h)
+  n=$(( W * H / 60 ))
+  local chars=('·' '✦' '⋆' '˖' '.')
+  for (( i=0; i<n; i++ )); do
+    local r=$(( RANDOM % H + 1 )) c=$(( RANDOM % W + 1 ))
+    move_to "$r" "$c"
+    case $(( RANDOM % 3 )) in
+      0) fg 70 70 110 ;; 1) fg 100 100 150 ;; 2) fg 130 130 180 ;;
+    esac
+    printf '%s' "${chars[$(( RANDOM % 5 ))]}"
+  done
+  reset_all
+}
+
 # ---- static header (drawn once per screen, no lag) ---------
 MENU_TOP=0
 draw_header() {
