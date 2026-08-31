@@ -23,6 +23,7 @@ ENV_FILE="$APP_DIR/.env"
 BIN_PATH="/usr/local/bin/nebula"
 DEFAULT_PORT=3000
 LANG="en"
+STTY_SAVE=""
 # Where to read keystrokes from: prefer the real terminal.
 if [ -r /dev/tty ]; then KEY_SRC=/dev/tty; else KEY_SRC=/dev/stdin; fi
 
@@ -48,7 +49,11 @@ alt_screen(){ printf '%s[?1049h' "$ESC"; }   # enter alternate buffer
 main_screen(){ printf '%s[?1049l' "$ESC"; }  # restore user's screen
 move_to(){ printf '%s[%d;%dH' "$ESC" "$1" "$2"; }
 reset_all(){ printf '%s[0m' "$ESC"; }
-cleanup(){ show_cursor; disable_mouse 2>/dev/null; reset_all; main_screen 2>/dev/null || true; printf '\n'; }
+cleanup(){
+  show_cursor; disable_mouse 2>/dev/null; reset_all
+  [ -n "${STTY_SAVE:-}" ] && stty "$STTY_SAVE" 2>/dev/null || stty echo 2>/dev/null || true
+  main_screen 2>/dev/null || true; printf '\n'
+}
 trap cleanup EXIT INT TERM
 
 fg(){ printf '%s[38;2;%d;%d;%dm' "$ESC" "$1" "$2" "$3"; }
@@ -875,6 +880,30 @@ read_key() {
 
 MENU_PREV=-1
 
+# Redraw ONLY the menu rows (no header/logo/stars) — fast, for navigation.
+draw_menu_only() {
+  local W; W=$(term_w)
+  local n=${#MENU_ITEMS[@]}
+  local boxw=50
+  local col=$(( (W - boxw) / 2 )); [ "$col" -lt 1 ] && col=1
+  local start=$(( MENU_TOP + 2 ))
+  local i
+  for (( i=0; i<n; i++ )); do
+    local row=$(( start + i ))
+    local num=$(( i + 1 ))
+    move_to "$row" "$col"
+    if [ "$i" -eq "$MENU_SEL" ]; then
+      grad_color 30; printf '▸ '
+      bg 70 62 140; fg 255 255 255; bold
+      printf ' %d. %-41s ' "$num" "${MENU_ITEMS[$i]}"
+      reset_all
+    else
+      printf '  '; fg 160 170 190
+      printf ' %d. %-41s ' "$num" "${MENU_ITEMS[$i]}"; reset_all
+    fi
+  done
+}
+
 # ---- glow highlight for selected button (single-frame) -----
 pulse_selected() {  # $1 row $2 col $3 text
   local row=$1 col=$2 text=$3
@@ -911,24 +940,69 @@ draw_menu() {
 }
 
 run_menu() {
-  MENU_ITEMS=("$@"); MENU_SEL=0; MENU_PREV=-1
+  MENU_ITEMS=("$@"); MENU_SEL=0
   local n=${#MENU_ITEMS[@]}
   hide_cursor; draw_header; draw_menu
+  local dirty=0
   while true; do
     local kp; kp="$(read_key)"
     case "$kp" in
-      up)    MENU_SEL=$(( (MENU_SEL-1+n)%n )); draw_menu ;;
-      down)  MENU_SEL=$(( (MENU_SEL+1)%n )); draw_menu ;;
+      up)    MENU_SEL=$(( (MENU_SEL-1+n)%n )); dirty=1 ;;
+      down)  MENU_SEL=$(( (MENU_SEL+1)%n )); dirty=1 ;;
       enter) MENU_RESULT=$MENU_SEL; return 0 ;;
       quit|esc) MENU_RESULT=-1; return 1 ;;
-      num:*) # number pressed → pick that item directly (1-based)
+      num:*)
         local idx=$(( ${kp#num:} - 1 ))
         if [ "$idx" -ge 0 ] && [ "$idx" -lt "$n" ]; then
           MENU_SEL=$idx; MENU_RESULT=$idx; return 0
         fi ;;
       none) : ;;
     esac
+    # Only redraw when the selection actually changed. Before redrawing,
+    # drain any keys already queued (fast scroll) and apply them first, so
+    # we redraw ONCE for a burst instead of lagging behind. This kills the
+    # "^[[A spilling on screen" problem on fast scroll.
+    if [ "$dirty" = "1" ]; then
+      local more
+      while true; do
+        more="$(read_key_nowait)"
+        case "$more" in
+          up)   MENU_SEL=$(( (MENU_SEL-1+n)%n )) ;;
+          down) MENU_SEL=$(( (MENU_SEL+1)%n )) ;;
+          enter) MENU_RESULT=$MENU_SEL; return 0 ;;
+          quit|esc) MENU_RESULT=-1; return 1 ;;
+          num:*) local i2=$(( ${more#num:} - 1 ))
+                 if [ "$i2" -ge 0 ] && [ "$i2" -lt "$n" ]; then MENU_SEL=$i2; MENU_RESULT=$i2; return 0; fi ;;
+          empty|none) break ;;
+        esac
+      done
+      draw_menu_only
+      dirty=0
+    fi
   done
+}
+
+# non-blocking read: returns "empty" immediately if nothing is queued
+read_key_nowait() {
+  local k c1 c2 c3
+  IFS= read -rsn1 -t 0.001 k <"$KEY_SRC" 2>/dev/null || { echo empty; return; }
+  case "$k" in
+    "$ESC")
+      IFS= read -rsn1 -t 0.02 c1 <"$KEY_SRC" 2>/dev/null || { echo esc; return; }
+      [ "$c1" != "[" ] && [ "$c1" != "O" ] && { echo none; return; }
+      IFS= read -rsn1 -t 0.02 c2 <"$KEY_SRC" 2>/dev/null || { echo none; return; }
+      case "$c2" in
+        A) echo up ;; B) echo down ;; C) echo right ;; D) echo left ;;
+        M) read -rsn3 -t 0.02 c3 <"$KEY_SRC" 2>/dev/null || true; echo none ;;
+        "<") while IFS= read -rsn1 -t 0.02 c3 <"$KEY_SRC" 2>/dev/null; do case "$c3" in [Mm]) break;; esac; done; echo none ;;
+        *) while IFS= read -rsn1 -t 0.01 c3 <"$KEY_SRC" 2>/dev/null; do case "$c3" in [A-Za-z~]) break;; esac; done; echo none ;;
+      esac ;;
+    "") echo enter ;;
+    k|K) echo up ;; j|J) echo down ;;
+    q|Q|0) echo quit ;;
+    [1-9]) echo "num:$k" ;;
+    *) echo none ;;
+  esac
 }
 
 # ---- 3D-ish info card --------------------------------------
@@ -1361,6 +1435,11 @@ goodbye_screen() {
   sleep 0.6
 }
 main() {
+  # Put the terminal in no-echo mode so any stray/unparsed escape bytes
+  # (e.g. from very fast scrolling) never get printed on screen. Saved and
+  # restored by the trap.
+  STTY_SAVE="$(stty -g 2>/dev/null || true)"
+  stty -echo 2>/dev/null || true
   alt_screen; hide_cursor; disable_mouse
   epic_splash
   pick_language || { cleanup; return 0; }
