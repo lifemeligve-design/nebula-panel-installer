@@ -730,7 +730,7 @@ spin_planet() {  # $1 row $2 col $3 label ; runs cmd in $4..
     move_to "$row" "$col"
     printf '%s' "${PLANET[$(( i % 8 ))]}"
     fg 148 163 184; printf '  %s' "$label"; reset_all
-    i=$(( i+1 )); sleep 0.12
+    i=$(( i+1 )); sleep 0.08
   done
   wait "$pid" 2>/dev/null || true
   move_to "$row" "$col"; fg 56 189 140; printf '✓ '; fg 148 163 184; printf ' %s      ' "$label"; reset_all
@@ -814,30 +814,26 @@ epic_splash() {
   # light starfield backdrop
   draw_stars_fast
 
-  # smooth multi-pass gradient sweep across the logo (the nice effect)
+  # fast gradient sweep across the logo (fewer frames, quicker)
   local s
-  for s in 0 8 16 24 32 40 48 56 64 72 80 72 64 56 48 40 32 24 16 8 0; do
+  for s in 0 15 30 45 60 75 55 35 15 0; do
     paint_logo "$top" "$col" "$s"
-    sleep 0.035
+    sleep 0.012
   done
 
-  # tagline typewriter
+  # tagline (quick typewriter)
   local tag="N E B U L A   A I   P L A T F O R M"
   local tcol=$(( (W - ${#tag}) / 2 )); [ "$tcol" -lt 1 ] && tcol=1
-  typewriter "$(( top + LOGO_H + 1 ))" "$tcol" "$tag" 148 163 184 0.012
+  typewriter "$(( top + LOGO_H + 1 ))" "$tcol" "$tag" 148 163 184 0.005
 
   # subtitle
   local sub="✦  Powerful Bot & Panel Platform  ✦"
   local scol=$(( (W - ${#sub}) / 2 )); [ "$scol" -lt 1 ] && scol=1
   move_to "$(( top + LOGO_H + 3 ))" "$scol"; dim; fg 120 130 160; printf '%s' "$sub"; reset_all
 
-  # spinning globe intro at the bottom
-  local ph
-  for ph in 0 1 2 0 1 2; do
-    draw_footer_globe "$ph"
-    sleep 0.12
-  done
-  sleep 0.3
+  # quick globe flourish
+  draw_footer_globe 0
+  sleep 0.25
 }
 
 # ---- bottom status bar -------------------------------------
@@ -1333,7 +1329,7 @@ do_install() {
   docker compose --project-directory "$APP_DIR" -f "$COMPOSE_FILE" up -d >/dev/null 2>&1
   install_cli
   draw_progress "$prow" "$col" 100 "$(t container_up)          "
-  sleep 0.7
+  sleep 0.4
 
   local ip; ip="$(public_ip)"
   local url="http://${ip}:${HOST_PORT:-$DEFAULT_PORT}"
@@ -1360,7 +1356,7 @@ do_update() {
   draw_progress "$MENU_TOP" "$col" 80 "$(t updating)  "
   docker compose --project-directory "$APP_DIR" -f "$COMPOSE_FILE" up -d >/dev/null 2>&1
   draw_progress "$MENU_TOP" "$col" 100 "$(t updated)   "
-  sleep 0.6; info_screen "$(t menu_update)" "✓  $(t updated)"
+  sleep 0.35; info_screen "$(t menu_update)" "✓  $(t updated)"
 }
 
 do_ssl() {
@@ -1454,7 +1450,7 @@ goodbye_screen() {
   local msg="$(t goodbye)"
   local col=$(( (W - ${#msg}) / 2 )); [ "$col" -lt 1 ] && col=1
   move_to "$(( H/2 ))" "$col"; bold; grad_color 40; printf '%s' "$msg"; reset_all
-  sleep 0.6
+  sleep 0.35
 }
 main() {
   # Put the terminal in no-echo mode so any stray/unparsed escape bytes
@@ -1601,7 +1597,7 @@ do_update() {
   draw_progress "$MENU_TOP" "$col" 80 "$(t updating)  "
   docker compose --project-directory "$APP_DIR" -f "$COMPOSE_FILE" up -d >/dev/null 2>&1
   draw_progress "$MENU_TOP" "$col" 100 "$(t updated)   "
-  sleep 0.6
+  sleep 0.35
   card_screen "⬆️  $(t menu_update)" "" "✓  $(t updated)" ""
 }
 
