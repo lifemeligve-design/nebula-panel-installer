@@ -1,0 +1,138 @@
+<svg width="100%" viewBox="0 0 1000 720" xmlns="http://www.w3.org/2000/svg" role="img">
+<title>Nebula AI Platform — Complete Overview</title>
+<desc>Every module and feature of the Nebula AI Platform.</desc>
+<defs>
+<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#0a0618"/><stop offset="0.5" stop-color="#160f38"/><stop offset="1" stop-color="#091428"/>
+</linearGradient>
+<linearGradient id="g" x1="0" y1="0" x2="1" y2="0">
+<stop offset="0" stop-color="#a78bfa"/><stop offset="0.5" stop-color="#818cf8"/><stop offset="1" stop-color="#38bdf8"/>
+</linearGradient>
+<linearGradient id="card" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#211c52"/><stop offset="1" stop-color="#141133"/>
+</linearGradient>
+<radialGradient id="cg" cx="0.5" cy="0.5" r="0.5">
+<stop offset="0" stop-color="#8b5cf6" stop-opacity="0.9"/><stop offset="1" stop-color="#8b5cf6" stop-opacity="0"/>
+</radialGradient>
+<radialGradient id="amb" cx="0.5" cy="0.28" r="0.7">
+<stop offset="0" stop-color="#6366f1" stop-opacity="0.22"/><stop offset="1" stop-color="#6366f1" stop-opacity="0"/>
+</radialGradient>
+<filter id="sh"><feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="#000" flood-opacity="0.45"/></filter>
+</defs>
+
+<rect width="1000" height="720" rx="20" fill="url(#bg)"/>
+<ellipse cx="500" cy="150" rx="520" ry="240" fill="url(#amb)"/>
+
+<!-- stars -->
+<g fill="#fff">
+<circle cx="60" cy="50" r="1.3" opacity="0.7"/><circle cx="940" cy="60" r="1.4" opacity="0.7"/>
+<circle cx="200" cy="35" r="1" opacity="0.5"/><circle cx="800" cy="40" r="1" opacity="0.5"/>
+<circle cx="40" cy="680" r="1.2" opacity="0.6"/><circle cx="960" cy="690" r="1.3" opacity="0.6"/>
+<circle cx="500" cy="28" r="1" opacity="0.5"/><circle cx="120" cy="700" r="1" opacity="0.5"/>
+</g>
+
+<!-- ===== HEADER: logo + title ===== -->
+<g transform="translate(70,54)">
+<circle cx="0" cy="10" r="26" fill="url(#cg)"/>
+<circle cx="0" cy="10" r="15" fill="#1e1b4b"/>
+<circle cx="0" cy="10" r="15" fill="none" stroke="url(#g)" stroke-width="2"/>
+<ellipse cx="0" cy="10" rx="24" ry="8" fill="none" stroke="#38bdf8" stroke-width="1.2" opacity="0.7" transform="rotate(20)"/>
+<circle cx="0" cy="10" r="4.5" fill="#a78bfa"/>
+</g>
+<text x="112" y="52" font-family="Verdana" font-size="30" font-weight="bold" fill="url(#g)" letter-spacing="2">NEBULA AI PLATFORM</text>
+<text x="113" y="74" font-family="Verdana" font-size="12" fill="#94a3b8" letter-spacing="3">COMPLETE ECOSYSTEM — ALL MODULES</text>
+<rect x="720" y="44" width="210" height="30" rx="15" fill="#4c1d95"/>
+<text x="825" y="64" text-anchor="middle" font-family="Verdana" font-size="12" font-weight="bold" fill="#e9d5ff">💎 $5 · Lifetime Pro</text>
+
+<!-- divider -->
+<rect x="70" y="96" width="860" height="2" rx="1" fill="url(#g)" opacity="0.5"/>
+
+<!-- ===== SECTION: ADMIN PANEL MODULES ===== -->
+<text x="70" y="128" font-family="Verdana" font-size="14" font-weight="bold" fill="#c7d2fe">🖥️  ADMIN PANEL MODULES</text>
+
+<!-- grid of module cards: 4 cols x 4 rows -->
+<!-- row 1 -->
+<g font-family="Verdana">
+<!-- card template repeated -->
+<g filter="url(#sh)"><rect x="70" y="142" width="205" height="66" rx="10" fill="url(#card)" stroke="#3730a3" stroke-width="1"/></g>
+<text x="88" y="170" font-size="20">📊</text><text x="116" y="167" font-size="12" font-weight="bold" fill="#e0e7ff">Dashboard</text><text x="116" y="184" font-size="9" fill="#94a3b8">Live stats &amp; overview</text><rect x="116" y="190" width="40" height="12" rx="6" fill="#14532d"/><text x="136" y="199" text-anchor="middle" font-size="7" fill="#86efac">FREE</text>
+
+<g filter="url(#sh)"><rect x="288" y="142" width="205" height="66" rx="10" fill="url(#card)" stroke="#3730a3" stroke-width="1"/></g>
+<text x="306" y="170" font-size="20">👥</text><text x="334" y="167" font-size="12" font-weight="bold" fill="#e0e7ff">Users</text><text x="334" y="184" font-size="9" fill="#94a3b8">Balances, history, profiles</text><rect x="334" y="190" width="40" height="12" rx="6" fill="#14532d"/><text x="354" y="199" text-anchor="middle" font-size="7" fill="#86efac">FREE</text>
+
+<g filter="url(#sh)"><rect x="506" y="142" width="205" height="66" rx="10" fill="url(#card)" stroke="#3730a3" stroke-width="1"/></g>
+<text x="524" y="170" font-size="20">🛡</text><text x="552" y="167" font-size="12" font-weight="bold" fill="#e0e7ff">Groups</text><text x="552" y="184" font-size="9" fill="#94a3b8">Auto-reply, schedules, locks</text><rect x="552" y="190" width="40" height="12" rx="6" fill="#14532d"/><text x="572" y="199" text-anchor="middle" font-size="7" fill="#86efac">FREE</text>
+
+<g filter="url(#sh)"><rect x="724" y="142" width="205" height="66" rx="10" fill="url(#card)" stroke="#5b21b6" stroke-width="1"/></g>
+<text x="742" y="170" font-size="20">🎯</text><text x="770" y="167" font-size="12" font-weight="bold" fill="#e0e7ff">Tasks &amp; Rewards</text><text x="770" y="184" font-size="9" fill="#94a3b8">Gigabyte reward missions</text><rect x="770" y="190" width="34" height="12" rx="6" fill="#4c1d95"/><text x="787" y="199" text-anchor="middle" font-size="7" fill="#d8b4fe">PRO</text>
+
+<!-- row 2 -->
+<g filter="url(#sh)"><rect x="70" y="218" width="205" height="66" rx="10" fill="url(#card)" stroke="#5b21b6" stroke-width="1"/></g>
+<text x="88" y="246" font-size="20">🌍</text><text x="116" y="243" font-size="12" font-weight="bold" fill="#e0e7ff">Servers &amp; VPN</text><text x="116" y="260" font-size="9" fill="#94a3b8">Panels &amp; config mgmt</text><rect x="116" y="266" width="34" height="12" rx="6" fill="#4c1d95"/><text x="133" y="275" text-anchor="middle" font-size="7" fill="#d8b4fe">PRO</text>
+
+<g filter="url(#sh)"><rect x="288" y="218" width="205" height="66" rx="10" fill="url(#card)" stroke="#5b21b6" stroke-width="1"/></g>
+<text x="306" y="246" font-size="20">📱</text><text x="334" y="243" font-size="12" font-weight="bold" fill="#e0e7ff">Subscriptions</text><text x="334" y="260" font-size="9" fill="#94a3b8">Manage user plans</text><rect x="334" y="266" width="34" height="12" rx="6" fill="#4c1d95"/><text x="351" y="275" text-anchor="middle" font-size="7" fill="#d8b4fe">PRO</text>
+
+<g filter="url(#sh)"><rect x="506" y="218" width="205" height="66" rx="10" fill="url(#card)" stroke="#5b21b6" stroke-width="1"/></g>
+<text x="524" y="246" font-size="20">🛰</text><text x="552" y="243" font-size="12" font-weight="bold" fill="#e0e7ff">Follow-Guard</text><text x="552" y="260" font-size="9" fill="#94a3b8">Reclaim on channel leave</text><rect x="552" y="266" width="34" height="12" rx="6" fill="#4c1d95"/><text x="569" y="275" text-anchor="middle" font-size="7" fill="#d8b4fe">PRO</text>
+
+<g filter="url(#sh)"><rect x="724" y="218" width="205" height="66" rx="10" fill="url(#card)" stroke="#5b21b6" stroke-width="1"/></g>
+<text x="742" y="246" font-size="20">📋</text><text x="770" y="243" font-size="12" font-weight="bold" fill="#e0e7ff">Submissions</text><text x="770" y="260" font-size="9" fill="#94a3b8">Screenshot anti-fraud</text><rect x="770" y="266" width="34" height="12" rx="6" fill="#4c1d95"/><text x="787" y="275" text-anchor="middle" font-size="7" fill="#d8b4fe">PRO</text>
+
+<!-- row 3 -->
+<g filter="url(#sh)"><rect x="70" y="294" width="205" height="66" rx="10" fill="url(#card)" stroke="#5b21b6" stroke-width="1"/></g>
+<text x="88" y="322" font-size="20">📢</text><text x="116" y="319" font-size="12" font-weight="bold" fill="#e0e7ff">Broadcasts</text><text x="116" y="336" font-size="9" fill="#94a3b8">Message all users</text><rect x="116" y="342" width="34" height="12" rx="6" fill="#4c1d95"/><text x="133" y="351" text-anchor="middle" font-size="7" fill="#d8b4fe">PRO</text>
+
+<g filter="url(#sh)"><rect x="288" y="294" width="205" height="66" rx="10" fill="url(#card)" stroke="#5b21b6" stroke-width="1"/></g>
+<text x="306" y="322" font-size="20">🧑‍💼</text><text x="334" y="319" font-size="12" font-weight="bold" fill="#e0e7ff">Agents</text><text x="334" y="336" font-size="9" fill="#94a3b8">Sub-admins &amp; permissions</text><rect x="334" y="342" width="34" height="12" rx="6" fill="#4c1d95"/><text x="351" y="351" text-anchor="middle" font-size="7" fill="#d8b4fe">PRO</text>
+
+<g filter="url(#sh)"><rect x="506" y="294" width="205" height="66" rx="10" fill="url(#card)" stroke="#5b21b6" stroke-width="1"/></g>
+<text x="524" y="322" font-size="20">💰</text><text x="552" y="319" font-size="12" font-weight="bold" fill="#e0e7ff">Transactions</text><text x="552" y="336" font-size="9" fill="#94a3b8">Full financial ledger</text><rect x="552" y="342" width="34" height="12" rx="6" fill="#4c1d95"/><text x="569" y="351" text-anchor="middle" font-size="7" fill="#d8b4fe">PRO</text>
+
+<g filter="url(#sh)"><rect x="724" y="294" width="205" height="66" rx="10" fill="url(#card)" stroke="#5b21b6" stroke-width="1"/></g>
+<text x="742" y="322" font-size="20">💸</text><text x="770" y="319" font-size="12" font-weight="bold" fill="#e0e7ff">Transfers</text><text x="770" y="336" font-size="9" fill="#94a3b8">User-to-user transfers</text><rect x="770" y="342" width="34" height="12" rx="6" fill="#4c1d95"/><text x="787" y="351" text-anchor="middle" font-size="7" fill="#d8b4fe">PRO</text>
+
+<!-- row 4 -->
+<g filter="url(#sh)"><rect x="70" y="370" width="205" height="66" rx="10" fill="url(#card)" stroke="#5b21b6" stroke-width="1"/></g>
+<text x="88" y="398" font-size="20">👥</text><text x="116" y="395" font-size="12" font-weight="bold" fill="#e0e7ff">Referrals</text><text x="116" y="412" font-size="9" fill="#94a3b8">Invites &amp; leaderboards</text><rect x="116" y="418" width="34" height="12" rx="6" fill="#4c1d95"/><text x="133" y="427" text-anchor="middle" font-size="7" fill="#d8b4fe">PRO</text>
+
+<g filter="url(#sh)"><rect x="288" y="370" width="205" height="66" rx="10" fill="url(#card)" stroke="#5b21b6" stroke-width="1"/></g>
+<text x="306" y="398" font-size="20">💾</text><text x="334" y="395" font-size="12" font-weight="bold" fill="#e0e7ff">Backups</text><text x="334" y="412" font-size="9" fill="#94a3b8">Scheduled &amp; restore</text><rect x="334" y="418" width="34" height="12" rx="6" fill="#4c1d95"/><text x="351" y="427" text-anchor="middle" font-size="7" fill="#d8b4fe">PRO</text>
+
+<g filter="url(#sh)"><rect x="506" y="370" width="205" height="66" rx="10" fill="url(#card)" stroke="#5b21b6" stroke-width="1"/></g>
+<text x="524" y="398" font-size="20">💬</text><text x="552" y="395" font-size="12" font-weight="bold" fill="#e0e7ff">Support</text><text x="552" y="412" font-size="9" fill="#94a3b8">In-panel live chat</text><rect x="552" y="418" width="34" height="12" rx="6" fill="#4c1d95"/><text x="569" y="427" text-anchor="middle" font-size="7" fill="#d8b4fe">PRO</text>
+
+<g filter="url(#sh)"><rect x="724" y="370" width="205" height="66" rx="10" fill="url(#card)" stroke="#5b21b6" stroke-width="1"/></g>
+<text x="742" y="398" font-size="20">🔑</text><text x="770" y="395" font-size="12" font-weight="bold" fill="#e0e7ff">Licenses</text><text x="770" y="412" font-size="9" fill="#94a3b8">Issue &amp; manage keys</text><rect x="770" y="418" width="34" height="12" rx="6" fill="#4c1d95"/><text x="787" y="427" text-anchor="middle" font-size="7" fill="#d8b4fe">PRO</text>
+</g>
+
+<!-- ===== SECTION: BOT + SECURITY (bottom) ===== -->
+<rect x="70" y="456" width="860" height="2" rx="1" fill="url(#g)" opacity="0.4"/>
+
+<!-- Bot card -->
+<g filter="url(#sh)"><rect x="70" y="474" width="420" height="200" rx="14" fill="url(#card)" stroke="#0e7490" stroke-width="1.5"/></g>
+<circle cx="100" cy="504" r="14" fill="#229ED9"/><path d="M 93 504 L 108 498 L 105 511 L 100 507 Z" fill="#fff"/>
+<text x="124" y="502" font-family="Verdana" font-size="14" font-weight="bold" fill="#e0f2fe">🤖 Telegram Bot</text>
+<text x="124" y="518" font-family="Verdana" font-size="9" fill="#7dd3fc">The automated user-facing engine</text>
+<g font-family="Verdana" font-size="10" fill="#cbd5e1">
+<text x="90" y="546">💎 Gigabyte wallet system</text>
+<text x="90" y="568">🎯 Missions with real verification</text>
+<text x="90" y="590">👥 Referral codes &amp; rewards</text>
+<text x="90" y="612">₿ Crypto checkout &amp; withdrawals</text>
+<text x="90" y="634">🔒 Required-channel gating</text>
+<text x="90" y="656">⚙️ Group control via /panel</text>
+</g>
+
+<!-- Security card -->
+<g filter="url(#sh)"><rect x="510" y="474" width="420" height="200" rx="14" fill="url(#card)" stroke="#6d28d9" stroke-width="1.5"/></g>
+<text x="530" y="502" font-family="Verdana" font-size="14" font-weight="bold" fill="#e9d5ff">🔐 Security &amp; Infrastructure</text>
+<text x="530" y="518" font-family="Verdana" font-size="9" fill="#c4b5fd">Enterprise-grade protection</text>
+<g font-family="Verdana" font-size="10" fill="#cbd5e1">
+<text x="530" y="546">🔑 Ed25519-signed licenses</text>
+<text x="530" y="568">🐳 Sealed Docker image (private code)</text>
+<text x="530" y="590">🔒 Free SSL (domain or IP)</text>
+<text x="530" y="612">🤖 Anti-bot &amp; anti-spam engine</text>
+<text x="530" y="634">🛡 Screenshot anti-fraud</text>
+<text x="530" y="656">🌍 7-language UI · one-line install</text>
+</g>
+</svg>
