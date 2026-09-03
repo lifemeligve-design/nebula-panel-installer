@@ -28,6 +28,10 @@ Es ist für **Nicht-Entwickler** gebaut: eine Zeile auf einem frischen Ubuntu-Se
 
 ---
 
+<div align="center">
+<img src="https://raw.githubusercontent.com/lifemeligve-design/nebula-panel-installer/main/banner-hero.svg" alt="Nebula Ecosystem" width="100%"/>
+</div>
+
 ## ⚡ Schnellinstallation
 
 Führe auf einem frischen **Ubuntu 22.04 / 24.04 / 26.04** Server aus:
@@ -45,6 +49,10 @@ bash <(curl -Ls https://nebulapanel.cloud/install)
    ╚═╝  ╚═══╝╚══════╝╚═════╝  ╚═════╝ ╚══════╝╚═╝  ╚═╝
          N E B U L A   A I   P L A T F O R M
 ```
+
+<div align="center">
+<img src="https://raw.githubusercontent.com/lifemeligve-design/nebula-panel-installer/main/install-architecture.svg" alt="Install Flow & Architecture" width="100%"/>
+</div>
 
 1. Sprache wählen (Englisch · Türkisch · Chinesisch · Deutsch · Schwedisch · Farsi).
 2. **Installieren** wählen — ein Fortschrittsbalken zeigt Docker, Konfiguration, Image-Download und Start.
@@ -146,6 +154,11 @@ Beide installieren Nginx + Certbot, stellen das Zertifikat aus, aktivieren siche
 ---
 
 ## ✨ Vollständige Funktionsliste
+
+<div align="center">
+<img src="https://raw.githubusercontent.com/lifemeligve-design/nebula-panel-installer/main/platform-overview.svg" alt="All Modules" width="100%"/>
+</div>
+
 
 ### Installer & Betrieb
 
