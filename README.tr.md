@@ -28,6 +28,10 @@
 
 ---
 
+<div align="center">
+<img src="https://raw.githubusercontent.com/lifemeligve-design/nebula-panel-installer/main/banner-hero.svg" alt="Nebula Ecosystem" width="100%"/>
+</div>
+
 ## ⚡ Hızlı Kurulum
 
 Yeni bir **Ubuntu 22.04 / 24.04 / 26.04** sunucusunda şunu çalıştırın:
@@ -45,6 +49,10 @@ bash <(curl -Ls https://nebulapanel.cloud/install)
    ╚═╝  ╚═══╝╚══════╝╚═════╝  ╚═════╝ ╚══════╝╚═╝  ╚═╝
          N E B U L A   A I   P L A T F O R M
 ```
+
+<div align="center">
+<img src="https://raw.githubusercontent.com/lifemeligve-design/nebula-panel-installer/main/install-architecture.svg" alt="Install Flow & Architecture" width="100%"/>
+</div>
 
 1. Dilinizi seçin (İngilizce · Türkçe · Çince · Almanca · İsveççe · Farsça).
 2. **Kur**'u seçin — ilerleme çubuğu Docker, yapılandırma, imaj çekme ve başlatmayı gösterir.
@@ -146,6 +154,11 @@ Her ikisi de Nginx + Certbot kurar, sertifikayı verir, güvenli çerezleri aça
 ---
 
 ## ✨ Tüm Özellikler
+
+<div align="center">
+<img src="https://raw.githubusercontent.com/lifemeligve-design/nebula-panel-installer/main/platform-overview.svg" alt="All Modules" width="100%"/>
+</div>
+
 
 ### Kurulum & İşlemler
 
