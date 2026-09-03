@@ -9,7 +9,7 @@
   <img alt="Price" src="https://img.shields.io/badge/Pro-$5_lifetime-a855f7?style=for-the-badge">
 </p>
 <p><a href="https://t.me/NebulaAiHQ"><img alt="Telegram" src="https://img.shields.io/badge/Telegram-@NebulaAiHQ-229ED9?style=for-the-badge&logo=telegram&logoColor=white"></a></p>
-<h3>پلتفرم کامل و سلف‌هاست ربات تلگرام و مدیریت — نصب با یک خط دستور.</h3>
+<h3>پلتفرم کامل و حرفه ای  ربات تلگرام و مدیریت گروه کانال و کسب و کار — نصب با یک خط دستور.</h3>
 </div>
 
 <div align="center">
