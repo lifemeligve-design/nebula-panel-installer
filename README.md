@@ -2,8 +2,6 @@
 
 <img src="https://raw.githubusercontent.com/lifemeligve-design/nebula-panel-installer/main/banner.svg" alt="Nebula AI Platform" width="100%"/>
 
-<img src="https://raw.githubusercontent.com/lifemeligve-design/nebula-panel-installer/main/banner-hero.svg" alt="Nebula AI Platform Overview" width="100%"/>
-
 <p>
   <img alt="Version" src="https://img.shields.io/badge/version-1.0-8b5cf6?style=for-the-badge">
   <img alt="Ubuntu" src="https://img.shields.io/badge/Ubuntu-22·24·26-6366f1?style=for-the-badge&logo=ubuntu&logoColor=white">
@@ -30,6 +28,10 @@ It is built for **non-developers**: run one line on a fresh Ubuntu server and ev
 
 ---
 
+<div align="center">
+<img src="https://raw.githubusercontent.com/lifemeligve-design/nebula-panel-installer/main/banner-hero.svg" alt="Nebula Ecosystem" width="100%"/>
+</div>
+
 ## ⚡ Quick Install
 
 On a fresh **Ubuntu 22.04 / 24.04 / 26.04** server, run:
@@ -47,6 +49,10 @@ bash <(curl -Ls https://nebulapanel.cloud/install)
    ╚═╝  ╚═══╝╚══════╝╚═════╝  ╚═════╝ ╚══════╝╚═╝  ╚═╝
          N E B U L A   A I   P L A T F O R M
 ```
+
+<div align="center">
+<img src="https://raw.githubusercontent.com/lifemeligve-design/nebula-panel-installer/main/install-architecture.svg" alt="Install Flow & Architecture" width="100%"/>
+</div>
 
 1. Pick your language (English · Türkçe · 中文 · Deutsch · Svenska · Farsi).
 2. Choose **Install** — a progress bar shows Docker, config, image pull, and startup.
@@ -148,6 +154,11 @@ Both install Nginx + Certbot, issue the certificate, enable secure cookies, and 
 ---
 
 ## ✨ Full Feature List
+
+<div align="center">
+<img src="https://raw.githubusercontent.com/lifemeligve-design/nebula-panel-installer/main/platform-overview.svg" alt="All Modules" width="100%"/>
+</div>
+
 
 ### Installer & Operations
 
