@@ -9,7 +9,7 @@
   <img alt="Price" src="https://img.shields.io/badge/Pro-$5_lifetime-a855f7?style=for-the-badge">
 </p>
 <p><a href="https://t.me/NebulaAiHQ"><img alt="Telegram" src="https://img.shields.io/badge/Telegram-@NebulaAiHQ-229ED9?style=for-the-badge&logo=telegram&logoColor=white"></a></p>
-<h3>پلتفرم کامل و حرفه ای  ربات تلگرامی و مدیریت انواع گروه و کانال اختصاصی و اکو سیستم پیچیده  — نصب با یک خط دستور.</h3>
+<h3>پلتفرم کامل و سلف‌هاست ربات تلگرام و مدیریت — نصب با یک خط دستور.</h3>
 </div>
 
 <div align="center">
@@ -28,6 +28,10 @@
 
 ---
 
+<div align="center">
+<img src="https://raw.githubusercontent.com/lifemeligve-design/nebula-panel-installer/main/banner-hero.svg" alt="Nebula Ecosystem" width="100%"/>
+</div>
+
 ## ⚡ نصب سریع
 
 روی یک سرور **اوبونتو ۲۲.۰۴ / ۲۴.۰۴ / ۲۶.۰۴** تازه، این را اجرا کنید:
@@ -45,6 +49,10 @@ bash <(curl -Ls https://nebulapanel.cloud/install)
    ╚═╝  ╚═══╝╚══════╝╚═════╝  ╚═════╝ ╚══════╝╚═╝  ╚═╝
          N E B U L A   A I   P L A T F O R M
 ```
+
+<div align="center">
+<img src="https://raw.githubusercontent.com/lifemeligve-design/nebula-panel-installer/main/install-architecture.svg" alt="Install Flow & Architecture" width="100%"/>
+</div>
 
 ۱. زبان خود را انتخاب کنید (انگلیسی · ترکی · چینی · آلمانی · سوئدی · فارسی).
 ۲. گزینه‌ی **نصب** را انتخاب کنید — یک نوار پیشرفت مراحل داکر، تنظیمات، دریافت ایمیج و راه‌اندازی را نشان می‌دهد.
@@ -146,6 +154,11 @@ nebula ssl auto
 ---
 
 ## ✨ لیست کامل ویژگی‌ها
+
+<div align="center">
+<img src="https://raw.githubusercontent.com/lifemeligve-design/nebula-panel-installer/main/platform-overview.svg" alt="All Modules" width="100%"/>
+</div>
+
 
 ### نصب و عملیات
 
