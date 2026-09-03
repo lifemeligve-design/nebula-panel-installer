@@ -28,6 +28,10 @@
 
 ---
 
+<div align="center">
+<img src="https://raw.githubusercontent.com/lifemeligve-design/nebula-panel-installer/main/banner-hero.svg" alt="Nebula Ecosystem" width="100%"/>
+</div>
+
 ## ⚡ 快速安装
 
 在全新的 **Ubuntu 22.04 / 24.04 / 26.04** 服务器上运行：
@@ -45,6 +49,10 @@ bash <(curl -Ls https://nebulapanel.cloud/install)
    ╚═╝  ╚═══╝╚══════╝╚═════╝  ╚═════╝ ╚══════╝╚═╝  ╚═╝
          N E B U L A   A I   P L A T F O R M
 ```
+
+<div align="center">
+<img src="https://raw.githubusercontent.com/lifemeligve-design/nebula-panel-installer/main/install-architecture.svg" alt="Install Flow & Architecture" width="100%"/>
+</div>
 
 1. 选择语言（英语 · 土耳其语 · 中文 · 德语 · 瑞典语 · 波斯语）。
 2. 选择**安装**——进度条显示 Docker、配置、拉取镜像和启动。
@@ -146,6 +154,11 @@ nebula ssl auto
 ---
 
 ## ✨ 完整功能列表
+
+<div align="center">
+<img src="https://raw.githubusercontent.com/lifemeligve-design/nebula-panel-installer/main/platform-overview.svg" alt="All Modules" width="100%"/>
+</div>
+
 
 ### 安装与运维
 
