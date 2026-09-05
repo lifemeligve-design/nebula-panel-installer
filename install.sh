@@ -1146,6 +1146,9 @@ services:
       - "${HOST_PORT:-3000}:3000"
     volumes:
       - nebula-data:/app/data
+      - /var/run/docker.sock:/var/run/docker.sock   # enables one-click auto-update from the panel
+    environment:
+      - NEBULA_IMAGE=weblinuxi/nebula-platform:latest
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://127.0.0.1:3000/"]
       interval: 30s
