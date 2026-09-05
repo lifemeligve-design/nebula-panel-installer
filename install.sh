@@ -1147,6 +1147,7 @@ services:
     volumes:
       - nebula-data:/app/data
       - /var/run/docker.sock:/var/run/docker.sock   # enables one-click auto-update from the panel
+      - /opt/nebula:/opt/nebula:ro                  # lets the panel read the compose file to self-update
     environment:
       - NEBULA_IMAGE=weblinuxi/nebula-platform:latest
     healthcheck:
